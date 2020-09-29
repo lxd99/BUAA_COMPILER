@@ -1,4 +1,6 @@
-#include <bits/stdc++.h>
+#include<cstdio>
+#include<string>
+#include<cstdlib>
 using namespace  std;
 #define IDENFR 0
 #define INTCON 1
@@ -239,6 +241,7 @@ int main ()
 {
    // FILE* fp  = fopen("../P0/testFile/testfile4.txt","r");
    FILE* fp  = fopen("testfile.txt","r");
+
    freopen("output.txt","w",stdout);
    getsym(fp);
 }
