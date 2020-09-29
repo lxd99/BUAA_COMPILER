@@ -1,0 +1,12 @@
+
+单词名称	类别码	单词名称	类别码	单词名称	类别码	单词名称	类别码
+标识符	IDENFR	else	ELSETK	-	MINU	=	ASSIGN
+整形常量	INTCON	switch	SWITCHTK	*	MULT	;	SEMICN
+字符常量	CHARCON	case	CASETK	/	DIV	,	COMMA
+字符串	STRCON	default	DEFAULTTK	<	LSS	(	LPARENT
+const	CONSTTK	while	WHILETK	<=	LEQ	)	RPARENT
+int	INTTK	for	FORTK	>	GRE	[	LBRACK
+char	CHARTK	scanf	SCANFTK	>=	GEQ	]	RBRACK
+void	VOIDTK	printf	PRINTFTK	==	EQL	{	LBRACE
+main	MAINTK	return	RETURNTK	!=	NEQ	}	RBRACE
+if	IFTK	+	PLUS	：	COLON	
