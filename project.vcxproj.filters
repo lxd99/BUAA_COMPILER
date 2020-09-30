@@ -13,16 +13,34 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="源文件\cf">
-      <UniqueIdentifier>{d74357c6-cc77-4014-930c-db48d76ceef7}</UniqueIdentifier>
+    <Filter Include="资源文件\testfile">
+      <UniqueIdentifier>{a9a6d5a3-4756-454f-90f8-87653dc11e2e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="源文件\test">
-      <UniqueIdentifier>{a4cb70aa-3c0e-4a86-b46b-984a96cd93aa}</UniqueIdentifier>
+    <Filter Include="源文件\autoC">
+      <UniqueIdentifier>{af8a50db-2fbd-4b65-bdd3-bfbc002509bd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\core">
+      <UniqueIdentifier>{d74357c6-cc77-4014-930c-db48d76ceef7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\P1\getsymb.cpp">
-      <Filter>源文件\cf</Filter>
+    <ClCompile Include="src\core\yf.cpp">
+      <Filter>源文件\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\test.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="supplement\standard.cpp">
+      <Filter>资源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\autoC\symb.cpp">
+      <Filter>源文件\autoC</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\header.h">
+      <Filter>头文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\cf.cpp">
+      <Filter>源文件\core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -31,8 +49,47 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="project.rc">
+    <Text Include="src\P0\testFile\testfile1.txt">
+      <Filter>资源文件\testfile</Filter>
+    </Text>
+    <Text Include="src\P0\testFile\testfile2.txt">
+      <Filter>资源文件\testfile</Filter>
+    </Text>
+    <Text Include="src\P0\testFile\testfile3.txt">
+      <Filter>资源文件\testfile</Filter>
+    </Text>
+    <Text Include="src\P0\testFile\testfile4.txt">
+      <Filter>资源文件\testfile</Filter>
+    </Text>
+    <Text Include="src\P0\testFile\testin1.txt">
+      <Filter>资源文件\testfile</Filter>
+    </Text>
+    <Text Include="src\P0\testFile\testin2.txt">
+      <Filter>资源文件\testfile</Filter>
+    </Text>
+    <Text Include="src\P0\testFile\testin3.txt">
+      <Filter>资源文件\testfile</Filter>
+    </Text>
+    <Text Include="src\P0\testFile\testin4.txt">
+      <Filter>资源文件\testfile</Filter>
+    </Text>
+    <Text Include="src\P0\testFile\testout1.txt">
+      <Filter>资源文件\testfile</Filter>
+    </Text>
+    <Text Include="src\P0\testFile\testout2.txt">
+      <Filter>资源文件\testfile</Filter>
+    </Text>
+    <Text Include="src\P0\testFile\testout3.txt">
+      <Filter>资源文件\testfile</Filter>
+    </Text>
+    <Text Include="src\P0\testFile\testout4.txt">
+      <Filter>资源文件\testfile</Filter>
+    </Text>
+    <Text Include="src\P1\testfile.txt">
       <Filter>资源文件</Filter>
-    </ResourceCompile>
+    </Text>
+    <Text Include="src\P1\output.txt">
+      <Filter>资源文件</Filter>
+    </Text>
   </ItemGroup>
 </Project>

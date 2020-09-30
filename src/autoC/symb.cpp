@@ -1,9 +1,12 @@
-#include<bits/stdc++.h>
+#define  _CRT_SECURE_NO_WARNINGS
+#include<cstdio>
+#include<string>
+#include<vector>
 using namespace std;
 int i = 0,deal=0;
 char s[150];
 vector<string> vec;
-int main(){
+int duck(){
     if(deal==0){
         freopen("in.txt","r",stdin);
         freopen("out.txt","w",stdout);

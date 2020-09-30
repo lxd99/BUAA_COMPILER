@@ -19,13 +19,36 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\P1\getsymb.cpp" />
+    <ClCompile Include="src\autoC\symb.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</DeploymentContent>
+    </ClCompile>
+    <ClCompile Include="src\core\cf.cpp" />
+    <ClCompile Include="src\core\header.h" />
+    <ClCompile Include="src\core\yf.cpp" />
+    <ClCompile Include="src\test.cpp" />
+    <ClCompile Include="supplement\standard.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="project.rc" />
+    <Text Include="src\P0\testFile\testfile1.txt" />
+    <Text Include="src\P0\testFile\testfile2.txt" />
+    <Text Include="src\P0\testFile\testfile3.txt" />
+    <Text Include="src\P0\testFile\testfile4.txt" />
+    <Text Include="src\P0\testFile\testin1.txt" />
+    <Text Include="src\P0\testFile\testin2.txt" />
+    <Text Include="src\P0\testFile\testin3.txt" />
+    <Text Include="src\P0\testFile\testin4.txt" />
+    <Text Include="src\P0\testFile\testout1.txt" />
+    <Text Include="src\P0\testFile\testout2.txt" />
+    <Text Include="src\P0\testFile\testout3.txt" />
+    <Text Include="src\P0\testFile\testout4.txt" />
+    <Text Include="src\P1\output.txt" />
+    <Text Include="src\P1\testfile.txt" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
