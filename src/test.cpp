@@ -1,16 +1,17 @@
+﻿#define  _CRT_SECURE_NO_WARNINGS
 #include<cstdio>
 #include<string>
 #include<cstdlib>
+#include<iostream>
+#include<vector>
 
 using  namespace std;
-void duck(string ss) {
-	printf("%s\n", ss.c_str());
+void duck(int a, int b = 5) {
+	printf("%d\n", a + b);
 }
 int _main() {
-	string a = "4646";
-	duck(a);
-	duck("123");
-	if (a >= "4645") printf("yes\n");
-	else printf("no\n");
+	vector<int> vec[3] = { {0,1} };
+	//printf("%d %d %d\n", vec[0].size(), vec[1].size(), vec[2].size());
+	duck(6);
 	return 0;
 }

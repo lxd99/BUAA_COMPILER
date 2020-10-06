@@ -1,4 +1,6 @@
-int a = 1;
+void fuck_you(){
+	printf("fuck!\n");
+	return (0);
+}
 void main(){
-    dsfjos
 }

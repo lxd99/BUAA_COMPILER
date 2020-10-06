@@ -30,9 +30,6 @@
     <ClCompile Include="src\test.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="supplement\standard.cpp">
-      <Filter>资源文件</Filter>
-    </ClCompile>
     <ClCompile Include="src\autoC\symb.cpp">
       <Filter>源文件\autoC</Filter>
     </ClCompile>
@@ -42,6 +39,9 @@
     <ClCompile Include="src\core\cf.cpp">
       <Filter>源文件\core</Filter>
     </ClCompile>
+    <ClCompile Include="src\core\main.cpp">
+      <Filter>源文件\core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -49,47 +49,53 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="src\P0\testFile\testfile1.txt">
-      <Filter>资源文件\testfile</Filter>
-    </Text>
-    <Text Include="src\P0\testFile\testfile2.txt">
-      <Filter>资源文件\testfile</Filter>
-    </Text>
-    <Text Include="src\P0\testFile\testfile3.txt">
-      <Filter>资源文件\testfile</Filter>
-    </Text>
-    <Text Include="src\P0\testFile\testfile4.txt">
-      <Filter>资源文件\testfile</Filter>
-    </Text>
-    <Text Include="src\P0\testFile\testin1.txt">
-      <Filter>资源文件\testfile</Filter>
-    </Text>
-    <Text Include="src\P0\testFile\testin2.txt">
-      <Filter>资源文件\testfile</Filter>
-    </Text>
-    <Text Include="src\P0\testFile\testin3.txt">
-      <Filter>资源文件\testfile</Filter>
-    </Text>
-    <Text Include="src\P0\testFile\testin4.txt">
-      <Filter>资源文件\testfile</Filter>
-    </Text>
-    <Text Include="src\P0\testFile\testout1.txt">
-      <Filter>资源文件\testfile</Filter>
-    </Text>
-    <Text Include="src\P0\testFile\testout2.txt">
-      <Filter>资源文件\testfile</Filter>
-    </Text>
-    <Text Include="src\P0\testFile\testout3.txt">
-      <Filter>资源文件\testfile</Filter>
-    </Text>
-    <Text Include="src\P0\testFile\testout4.txt">
-      <Filter>资源文件\testfile</Filter>
-    </Text>
-    <Text Include="src\P1\testfile.txt">
+    <Text Include="src\core\output.txt">
       <Filter>资源文件</Filter>
     </Text>
-    <Text Include="src\P1\output.txt">
+    <Text Include="src\core\testfile.txt">
       <Filter>资源文件</Filter>
+    </Text>
+    <Text Include="src\autoC\stdformat.txt">
+      <Filter>资源文件</Filter>
+    </Text>
+    <Text Include="supplement\standard.cpp">
+      <Filter>源文件</Filter>
+    </Text>
+    <Text Include="src\testFile\testfile1.txt">
+      <Filter>资源文件\testfile</Filter>
+    </Text>
+    <Text Include="src\testFile\testfile2.txt">
+      <Filter>资源文件\testfile</Filter>
+    </Text>
+    <Text Include="src\testFile\testfile3.txt">
+      <Filter>资源文件\testfile</Filter>
+    </Text>
+    <Text Include="src\testFile\testfile4.txt">
+      <Filter>资源文件\testfile</Filter>
+    </Text>
+    <Text Include="src\testFile\testin1.txt">
+      <Filter>资源文件\testfile</Filter>
+    </Text>
+    <Text Include="src\testFile\testin2.txt">
+      <Filter>资源文件\testfile</Filter>
+    </Text>
+    <Text Include="src\testFile\testin3.txt">
+      <Filter>资源文件\testfile</Filter>
+    </Text>
+    <Text Include="src\testFile\testin4.txt">
+      <Filter>资源文件\testfile</Filter>
+    </Text>
+    <Text Include="src\testFile\testout1.txt">
+      <Filter>资源文件\testfile</Filter>
+    </Text>
+    <Text Include="src\testFile\testout2.txt">
+      <Filter>资源文件\testfile</Filter>
+    </Text>
+    <Text Include="src\testFile\testout3.txt">
+      <Filter>资源文件\testfile</Filter>
+    </Text>
+    <Text Include="src\testFile\testout4.txt">
+      <Filter>资源文件\testfile</Filter>
     </Text>
   </ItemGroup>
 </Project>

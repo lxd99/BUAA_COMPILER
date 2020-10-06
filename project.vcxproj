@@ -25,30 +25,33 @@
     </ClCompile>
     <ClCompile Include="src\core\cf.cpp" />
     <ClCompile Include="src\core\header.h" />
+    <ClCompile Include="src\core\main.cpp" />
     <ClCompile Include="src\core\yf.cpp" />
     <ClCompile Include="src\test.cpp" />
-    <ClCompile Include="supplement\standard.cpp">
+    <Text Include="src\autoC\stdformat.txt" />
+    <Text Include="src\testFile\testfile1.txt" />
+    <Text Include="src\testFile\testfile2.txt" />
+    <Text Include="src\testFile\testfile3.txt" />
+    <Text Include="src\testFile\testfile4.txt" />
+    <Text Include="src\testFile\testin1.txt" />
+    <Text Include="src\testFile\testin2.txt" />
+    <Text Include="src\testFile\testin3.txt" />
+    <Text Include="src\testFile\testin4.txt" />
+    <Text Include="src\testFile\testout1.txt" />
+    <Text Include="src\testFile\testout2.txt" />
+    <Text Include="src\testFile\testout3.txt" />
+    <Text Include="src\testFile\testout4.txt" />
+    <Text Include="supplement\standard.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="src\P0\testFile\testfile1.txt" />
-    <Text Include="src\P0\testFile\testfile2.txt" />
-    <Text Include="src\P0\testFile\testfile3.txt" />
-    <Text Include="src\P0\testFile\testfile4.txt" />
-    <Text Include="src\P0\testFile\testin1.txt" />
-    <Text Include="src\P0\testFile\testin2.txt" />
-    <Text Include="src\P0\testFile\testin3.txt" />
-    <Text Include="src\P0\testFile\testin4.txt" />
-    <Text Include="src\P0\testFile\testout1.txt" />
-    <Text Include="src\P0\testFile\testout2.txt" />
-    <Text Include="src\P0\testFile\testout3.txt" />
-    <Text Include="src\P0\testFile\testout4.txt" />
-    <Text Include="src\P1\output.txt" />
-    <Text Include="src\P1\testfile.txt" />
+    <Text Include="src\core\output.txt" />
+    <Text Include="src\core\testfile.txt" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

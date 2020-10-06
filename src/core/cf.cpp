@@ -1,4 +1,4 @@
-#include "header.h"
+﻿#include "header.h"
 vector <word> wordList;
 string id[39] = { "IDENFR","INTCON","CHARCON","STRCON","CONSTTK","INTTK","CHARTK","VOIDTK","MAINTK","IFTK",
 "ELSETK","SWITCHTK","CASETK","DEFAULTTK","WHILETK","FORTK","SCANFTK","PRINTFTK","RETURNTK","PLUS",
@@ -7,14 +7,21 @@ string id[39] = { "IDENFR","INTCON","CHARCON","STRCON","CONSTTK","INTTK","CHARTK
 void error(int num,string s) {
 	printf("fuck! %s\n", s.c_str());
 }
-void add(int num, string s, int pt) {
-	if (pt) {
+void check(word wd,int mode) {
+	if (mode && wd.type >= 0) {
+		printf("%s %s\n", id[wd.type].c_str(), wd.s.c_str());
+	}
+}
+void addWord(int num,string s,int mode) {
+	if (num>=0&&mode) {
 		printf("%s %s\n", id[num].c_str(), s.c_str());
 	}
+	wordList.push_back(word(num, s));
 }
 void getsym(FILE* fp) {
 	int c = 0;
 	string ms;
+	
 	while (true) {
 		ms.clear();
 		c = fgetc(fp);
@@ -22,138 +29,123 @@ void getsym(FILE* fp) {
 			c = fgetc(fp);
 		}
 		if (c == -1) break;
+		ms.push_back(c);
 		//@signle
 		if (c == '(') {
-			ms.push_back(c);
-			add(LPARENT, ms);
+			addWord(LPARENT, ms);
 		}
 		else if (c == ')') {
-			ms.push_back(c);
-			add(RPARENT, ms);
+			addWord(RPARENT, ms);
 		}
 		else if (c == '[') {
-			ms.push_back('[');
-			add(LBRACK, ms);
+			addWord(LBRACK, ms);
 		}
 		else if (c == ']') {
-			ms.push_back(']');
-			add(RBRACK, ms);
+			addWord(RBRACK, ms);
 		}
 		else if (c == '{') {
-			ms.push_back(c);
-			add(LBRACE, ms);
+			addWord(LBRACE, ms);
 		}
 		else if (c == '}') {
-			ms.push_back(c);
-			add(RBRACE, ms);
+			addWord(RBRACE, ms);
 		}
 		else if (c == '+') {
-			ms.push_back(c);
-			add(PLUS, ms);
+			addWord(PLUS, ms);
 		}
 		else if (c == '-') {
-			ms.push_back(c);
-			add(MINU, ms);
+			addWord(MINU, ms);
 		}
 		else if (c == '*') {
-			ms.push_back(c);
-			add(MULT, ms);
+			addWord(MULT, ms);
 		}
 		else if (c == '/') {
-			ms.push_back(c);
-			add(DIV, ms);
+			addWord(DIV, ms);
 		}
 		else if (c == ',') {
-			ms.push_back(c);
-			add(COMMA, ms);
+			addWord(COMMA, ms);
 		}
 		else if (c == ':') {
-			ms.push_back(c);
-			add(COLON, ms);
+			addWord(COLON, ms);
 		}
 		else if (c == ';') {
-			ms.push_back(c);
-			add(SEMICN, ms);
+			addWord(SEMICN, ms);
 		}
 		//@doubel+saas
 		else if (c == '!') {
 			c = fgetc(fp);
-			if (c != '=') error(0);
+			ms.push_back(c);
+			if (c != '=') {
+				error(ERROR, ms);
+			}		
 			else {
-				ms.append("!=");
-				add(NEQ, ms);
+				addWord(NEQ, ms);
 			}
 		}
 		else if (c == '=') { // ==\=
-			ms.push_back(c);
 			c = fgetc(fp);
 			if (c == '=') {
 				ms.push_back(c);
-				add(EQL, ms);
+				addWord(EQL, ms);
 			}
 			else {
 				fseek(fp, -1, SEEK_CUR);
-				add(ASSIGN, ms);
+				addWord(ASSIGN, ms);
 			}
 		}
 		else if (c == '<') { //<\<=
-			ms.push_back(c);
 			c = fgetc(fp);
 			if (c == '=') {
 				ms.push_back(c);
-				add(LEQ, ms);
+				addWord(LEQ, ms);
 			}
 			else {
 				fseek(fp, -1, SEEK_CUR);
-				add(LSS, ms);
+				addWord(LSS, ms);
 			}
 		}
 		else if (c == '>') { // >\>= 
-			ms.push_back(c);
 			c = fgetc(fp);
 			if (c == '=') {
 				ms.push_back(c);
-				add(GEQ, ms);
+				addWord(GEQ, ms);
 			}
 			else {
 				fseek(fp, -1, SEEK_CUR);
-				add(GRE, ms);
+				addWord(GRE, ms);
 			}
 		}
 		else if (c == '\"') {
+			ms.pop_back();
 			c = fgetc(fp);
 			while (ISSTR(c)) {
 				ms.push_back(c);
 				c = fgetc(fp);
 			}
-
-			if (c != '\"') error(0);
-			else add(STRCON, ms);
+			
+			if (c != '\"') addWord(ERROR,ms);
+			else addWord(STRCON, ms);
 
 		}
 		else if (c == '\'') {
+			ms.pop_back();
 			char mc1 = fgetc(fp), mc2 = fgetc(fp);
-			if (mc2 != '\'' || !ISCHAR(mc1)) {
-				error(0);
-			}
-			else {
-				ms.push_back(mc1);
-				add(CHARCON, ms);
-			}
+			ms.push_back(mc1);
+			if (mc2 != '\'' || !ISCHAR(mc1)) 
+				error(ERROR,ms);		
+			else 
+				addWord(CHARCON, ms);
 		}
 		//@multi
 		else if (ISDIGIT(c)) {
-			ms.push_back(c);
 			c = fgetc(fp);
 			while (ISDIGIT(c)) {
 				ms.push_back(c);
 				c = fgetc(fp);
 			}
 			fseek(fp, -1, SEEK_CUR);
-			add(INTCON, ms);
+			addWord(INTCON, ms);
 		}
 		else if (ISALPHA(c)) { //15 special && 1 common
-			ms.push_back(c);
 			c = fgetc(fp);
 			while (ISALPHA(c) || ISDIGIT(c)) {
 				ms.push_back(c);
@@ -164,58 +156,58 @@ void getsym(FILE* fp) {
 				*it = LOWER((*it));
 			}
 			if (mms.compare("const") == 0) {
-				add(CONSTTK, ms);
+				addWord(CONSTTK, ms);
 			}
 			else if (mms.compare("int") == 0) {
-				add(INTTK, ms);
+				addWord(INTTK, ms);
 			}
 			else if (mms.compare("char") == 0) {
-				add(CHARTK, ms);
+				addWord(CHARTK, ms);
 			}
 			else if (mms.compare("void") == 0) {
-				add(VOIDTK, ms);
+				addWord(VOIDTK, ms);
 			}
 			else if (mms.compare("main") == 0) {
-				add(MAINTK, ms);
+				addWord(MAINTK, ms);
 			}
 			else if (mms.compare("if") == 0) {
-				add(IFTK, ms);
+				addWord(IFTK, ms);
 			}
 			else if (mms.compare("else") == 0) {
-				add(ELSETK, ms);
+				addWord(ELSETK, ms);
 			}
 			else if (mms.compare("switch") == 0) {
-				add(SWITCHTK, ms);
+				addWord(SWITCHTK, ms);
 			}
 			else if (mms.compare("case") == 0) {
-				add(CASETK, ms);
+				addWord(CASETK, ms);
 			}
 			else if (mms.compare("default") == 0) {
-				add(DEFAULTTK, ms);
+				addWord(DEFAULTTK, ms);
 			}
 			else if (mms.compare("while") == 0) {
-				add(WHILETK, ms);
+				addWord(WHILETK, ms);
 			}
 			else if (mms.compare("for") == 0) {
-				add(FORTK, ms);
+				addWord(FORTK, ms);
 			}
 			else if (mms.compare("scanf") == 0) {
-				add(SCANFTK, ms);
+				addWord(SCANFTK, ms);
 			}
 			else if (mms.compare("printf") == 0) {
-				add(PRINTFTK, ms);
+				addWord(PRINTFTK, ms);
 			}
 			else if (mms.compare("return") == 0) {
-				add(RETURNTK, ms);
+				addWord(RETURNTK, ms);
 			}
 			else {
-				add(IDENFR, ms);
+				addWord(IDENFR, ms);
 			}
 			if (c != -1) fseek(fp, -1, SEEK_CUR); //eof pd
 		}
 		else {
-			error(0);
+			error(ERROR,ms);
 		}
-
 	}
+	addWord(EOF,"");
 }

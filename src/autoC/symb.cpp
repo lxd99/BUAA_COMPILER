@@ -41,4 +41,5 @@ int duck(){
         }
         printf("\n");
     }
+    return 0;
 }
