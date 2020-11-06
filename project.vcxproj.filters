@@ -47,14 +47,11 @@
     <ClInclude Include="resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\core\symb.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="src\core\output.txt">
-      <Filter>资源文件</Filter>
-    </Text>
-    <Text Include="src\core\testfile.txt">
-      <Filter>资源文件</Filter>
-    </Text>
     <Text Include="src\autoC\stdformat.txt">
       <Filter>资源文件</Filter>
     </Text>
@@ -96,6 +93,12 @@
     </Text>
     <Text Include="src\testFile\testout4.txt">
       <Filter>资源文件\testfile</Filter>
+    </Text>
+    <Text Include="testfile.txt">
+      <Filter>资源文件\testfile</Filter>
+    </Text>
+    <Text Include="error.txt">
+      <Filter>资源文件</Filter>
     </Text>
   </ItemGroup>
 </Project>

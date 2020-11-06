@@ -1,0 +1,16 @@
+int fun1(int var1,char var2,int var3){
+    return (1);
+}
+char fun2(){
+    return ('c');
+}
+
+void main(){
+    int a,c;
+    char b,d;
+    fun1(a,a,a);
+    fun1(b,b,b);
+    fun1(b,a,b);
+    fun1(fun1(a,b,a),b,'a'+4/fun2());
+    fun1(fun2(),b,a);
+}

@@ -1,0 +1,151 @@
+const int x1 = 23,x1 = 24; 
+const char cl1 = 's';
+const int cl2 = 2
+char z = '';
+char y = '(';
+char z1 = 's';
+int x2 = 23; 
+int x2 = 34;
+int x3;
+char bl2
+char arr[1][1];
+int arr2[1;
+char arr3[1][1;
+char bl5;
+int arr4[2] = {2,3,4};
+int arr5[2] = {2};
+int arr6[2][2] = {{1,2}};
+int arr7[2][2] = {{1,2},{1,2},{1,2}};
+int arr8[2][2] = {{1,2},{1,2,3}};
+int arr9[2][2] = {{1,2},{1}};
+
+int x3() {
+return(1);
+}
+
+void x4(int a,int a) {
+}
+
+void hs1(int x) {
+}
+
+void hs2(char x) {
+}
+
+int hs3() {
+return (1);
+}
+
+int hs4(int a,char b,char c) {
+return (1);
+}
+
+void hs5() {
+return;
+}
+
+void hs6() {
+return();
+}
+
+void hs7() {
+return(arr[1][1]);
+}
+
+int hs8() {
+return;
+}
+
+int hs9() {
+return();
+}
+
+int hs10() {
+return(arr[1][1]);
+}
+
+int hs11() {
+return (1)
+}
+
+void hs12( {
+}
+
+int hs13( {
+return(1);
+}
+
+int hs14() {
+return (1;
+}
+
+int hs15() {
+
+}
+
+void main( {
+int x4;
+int x6 = 43;
+int x8;
+int bl1;
+for (x6 = 0 x6 <= 1;x6 = x6 + 1) {
+x6 = x6 + 1;
+}
+for (x6 = 0;x6 <= 1 x6 = x6 + 1) {
+x6 = x6 + 1;
+}
+arr[1][1 = z1;
+bl5 = arr[1][1;
+hs5()
+scanf(x6)
+printf(x6)
+hs3()
+x6 = x6 + 1
+x6 = (x6 + 1;
+if (x6 == 1 {
+x6 = x6 + 1;
+}
+for (x6 = 0;x6 <= 1;x6 = x6 + 1 {
+x6 = x6 + 1;
+}
+while (x6 <= 1 {
+x6 = x6 + 1;
+}
+scanf(cl1);
+cl1 = cl1 + 1;
+if (arr[1][1] == x6) {
+x6 = x6 + 1;
+}
+if (x6 >= z1) {
+z1 = z1 + 1;
+}
+hs5(;
+hs3(;
+printf("fdf";
+printf(x6 + 1;
+printf("fdf",x6+1;
+scanf(x6;
+switch (x6 {
+case 1 : x6 = x6 + 1;
+default : x6 = 1;
+}
+switch (x6) {
+case 1 : x6 = x6 + 1;
+}
+switch (arr[1][1]) {
+case 's' : x6 = x6 + 1;
+case 1 : x6 = x6 + 1;
+default : x6 = 1;
+}
+bl1 = bl1 * (bl1 + arr[arr[1][1]][1]);
+arr[z1][1] = bl1 * bl1;
+hs1();
+hs1(z1);
+hs2(arr[1][1]+x6);
+hs4(hs3(),arr[1][1],z+y);
+x4 = x4*(x4+x5);
+x7 = x6*2+3;
+scanf(x9);
+printf("");
+printf("	");
+}

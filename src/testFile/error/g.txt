@@ -1,0 +1,24 @@
+int fun1(){
+    return (4);
+}
+
+char fun2(){
+    return ('a');
+}
+
+void fun3(){
+    return ('a'+'b'+'c'+fun1());
+}
+
+void fun4(){
+    return (fun2());
+}
+
+void fun5(){
+    if(1)return (1);
+    else return ;
+}
+
+void main(){
+;
+}

@@ -1,0 +1,48 @@
+const int pi=5;
+int a[5]={1,2,3,-4,+105};
+
+void NoneDefine(){
+
+}
+char charfun(){
+    int cf[2][2] = {{0,1},{2,3}};
+    char ccf = 'a';
+    cf[0][0] = 5;
+    ccf = 'c';
+    return ('c');
+}
+int HasDefine(){
+    const int a = 5;
+    const char b ='a';
+    int x  =5;
+    return (5);
+}
+
+int One(int a){
+    ;
+    return (-a*2+1);
+}
+int Two(int a,int b){
+    return (+a*b);
+}
+int Three(int i,int b,int c){
+    a[i] = a[i] + 1;
+    return (a[i*b/c);
+}
+void main(){
+    duck = 6;
+    printf("18373054");
+    printf(One(-1));
+    printf(Three(0,6,2));
+    switch (Two(1,5)+5)
+    {
+        case 10: printf("true");
+        default: printf("false");
+    }
+    switch (Three(0,6,2))
+    {
+    case 0: printf("false");
+    case 1: printf("false");
+    }
+}
+

@@ -1,0 +1,12 @@
+void main(){
+    int a;
+    do ;
+    do a=1;
+    while(a>10)
+    do a=2;
+    do {
+        a=3;
+        a='a'+4;
+    }
+    (a<10)
+}

@@ -1,0 +1,14 @@
+int fun1(int var1,char var2,int var3){
+    return (1);
+}
+void fun2(){
+    return ;
+}
+
+void main(){
+    int a,c;
+    char b,d;
+    fun1(a,b,c);
+    fun1(a,b,c,d);
+    fun2(a,b);
+}

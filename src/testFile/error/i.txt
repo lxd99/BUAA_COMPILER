@@ -1,0 +1,14 @@
+int array1[10];
+char array2[10];
+char f(){
+    return ('a');
+}
+void main(){
+    int i;
+    i=array1[f()];
+    i=array1[f()+10];
+    i=array1['a'];
+    i=array1[+'a'];
+    i=array1[array2[i]];
+    i=array1[-array2[i]];
+}

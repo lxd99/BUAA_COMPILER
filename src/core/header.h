@@ -58,13 +58,28 @@ using namespace  std;
 extern string id[39];
 struct word {
 	string s;
+	string ss;
 	int type;
-	word(int types=INITIAL,string ms ="") {
+	int line;
+	int no;
+	word(int types=INITIAL,string ms ="",int mline=0,int mno = 0) {
 		type = types;
 		s = ms;
+		line = mline;
+		no = mno;
+		for (auto i : ms) {
+			if (i >= 'A' && i <= 'Z') i = i - 'A' + 'a';
+			ss.push_back(i);
+		}
+	}
+	bool operator == (const word& mwd) const {
+		return mwd.ss == ss && mwd.line == line && mwd.no == no;
+	}
+	bool operator < (const word& mwd) const {
+		if (mwd.line == line) return no < mwd.no;
+		return line < mwd.line;
 	}
 };
-void error(string s ="");
 void addWord(int num,string s,int mode = 0);
 void getsym(FILE* fp);
 void check(word wd,int mode =1);
@@ -79,79 +94,6 @@ void check(word wd,int mode =1);
 #define ISRELATEOP(x) ((x)==LSS||(x)==LEQ||(x)==GRE||(x)==GEQ||(x)==NEQ||(x)==EQL)
 #define HASRETURN(x) ((x)==INTFUN||(x)==CHARFUN)
 #define NORETURN(x) ((x)==VOIDFUN)
-#define BRACK  		\
-	do { \
-			wd = next(); \
-			noSignInt(); \
-			if (wd.type != RBRACK) error(); \
-			wd = next(); \
-	} while (0)
-#define EBRACK	\
-		wd = next(); \
-		expression(); \
-		if(wd.type !=RBRACK) error(); \
-		wd = next();
-struct symbol {
-	int type;
-	int layer;
-	string name;
-	symbol(int itype=INITIAL,int ilayer=0,string iname="") {
-		type = itype;
-		layer = ilayer;
-		name = iname;
-	}
-	bool operator ==(const symbol & x) const{
-		return type == x.type && name == x.name;
-	}
-	bool operator <(const symbol& x) const {
-		if (type == x.type) return name < x.name;
-		return type < x.type;
-	}
-};
-struct hashSymbol {
-	size_t operator()(const symbol &x) const{
-		return hash<int>()(x.layer) ^ hash<int>()(x.type) ^ hash<string>()(x.name);
-	}
-};
 word next(int mode=1);
-void addSen(string s ="",int mode=1);
-void cons_Var();
-void no_Has();
-void noSignInt();
-void program();
-void consExplain();
-void consDef();
-void con();
-void varExplain();
-void varDef();
-void varIniDef();
-void varNoIniDef();
-void hasReturnFun();
-void noReturnFun();
-void mainFun();
-void declareHead();
-void parList();
-void compSen();
-void senList();
-void sentence();
-void repSen();
-void condSen();
-void hasCallSen();
-void noCallSen();
-void assignSen();
-void readSen();
-void writeSen();
-void situaSen();
-void returnSen();
-void condition();
-void expression();
-void item();
-void factor();
-void stepLen();
-void valParList();
-void str();
-void caseTable();
-void subCase();
-void defaul();
-void integer();
+void addSen(string s ="",int mode=0);
 #endif //

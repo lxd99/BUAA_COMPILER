@@ -1,0 +1,21 @@
+const int a=10,b=20,c=30;
+const char a='a';
+const char c='c';
+
+int a(int a,int b,int c){
+    char a;
+    a=b;
+    b=c;
+    c=b;
+}
+
+void f(){
+    const char k='k';
+    int k;
+}
+
+void main(){
+    const char b='b';
+    int f;
+    f();
+}

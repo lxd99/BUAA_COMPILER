@@ -1,5 +1,7 @@
 ﻿#include "header.h"
 vector <word> wordList;
+int line = 1;
+int no = 1;
 string id[39] = { "IDENFR","INTCON","CHARCON","STRCON","CONSTTK","INTTK","CHARTK","VOIDTK","MAINTK","IFTK",
 "ELSETK","SWITCHTK","CASETK","DEFAULTTK","WHILETK","FORTK","SCANFTK","PRINTFTK","RETURNTK","PLUS",
 "MINU","MULT","DIV","LSS","LEQ","GRE","GEQ","EQL","NEQ","COLON",
@@ -16,7 +18,8 @@ void addWord(int num,string s,int mode) {
 	if (num>=0&&mode) {
 		printf("%s %s\n", id[num].c_str(), s.c_str());
 	}
-	wordList.push_back(word(num, s));
+	wordList.push_back(word(num, s,line,no));
+	no++;
 }
 void getsym(FILE* fp) {
 	int c = 0;
@@ -26,6 +29,7 @@ void getsym(FILE* fp) {
 		ms.clear();
 		c = fgetc(fp);
 		while (c == ' ' || c == '\n' || c == '\t' || c == '\r') {
+			if (c == '\n') line++, no = 1;
 			c = fgetc(fp);
 		}
 		if (c == -1) break;
@@ -115,25 +119,30 @@ void getsym(FILE* fp) {
 			}
 		}
 		else if (c == '\"') {
+			int iserror = 0;
 			ms.pop_back();
 			c = fgetc(fp);
-			while (ISSTR(c)) {
+			while (c!='\"') {
 				ms.push_back(c);
+				if (!ISSTR(c)) iserror = 1;
 				c = fgetc(fp);
 			}
 			
-			if (c != '\"') addWord(ERROR,ms);
+			if (ms.size() == 0 || iserror) addWord(ERROR, ms);
 			else addWord(STRCON, ms);
 
 		}
 		else if (c == '\'') {
+			int iserror = 0;
 			ms.pop_back();
-			char mc1 = fgetc(fp), mc2 = fgetc(fp);
-			ms.push_back(mc1);
-			if (mc2 != '\'' || !ISCHAR(mc1)) 
-				error(ERROR,ms);		
-			else 
-				addWord(CHARCON, ms);
+			c = fgetc(fp);
+			while (c != '\'') {
+				ms.push_back(c);
+				if (!ISCHAR(c)) iserror = 1;
+				c = fgetc(fp);
+			}
+			if (ms.size() == 0 || iserror) addWord(ERROR, ms);
+			else addWord(CHARCON, ms);
 		}
 		//@multi
 		else if (ISDIGIT(c)) {

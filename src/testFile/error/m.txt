@@ -1,0 +1,6 @@
+char array1[10,array2[10];
+void main(){
+    int a;
+    a = (2*array1[5+10);
+    array2[3 = 10*50/4+3;
+}

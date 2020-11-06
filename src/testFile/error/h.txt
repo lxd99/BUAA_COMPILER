@@ -1,0 +1,23 @@
+int fun1(){
+    return (4);
+}
+char fun2(){
+    return ('a'+4);
+}
+int fun3(){
+    return ('a'+'b'+'c'+fun1());
+}
+char fun4(){
+    return (fun2());
+}
+int fun5(){
+    if(1)return ('a'+'b');
+    else if(2)return ('a');
+    else return ;
+}
+int fun6(){
+    char array[50];
+    return (array[3]);
+}
+char fun8(){}
+void main(){}

@@ -1,0 +1,23 @@
+const int con=10
+int a b;
+int c
+int d
+char e
+char f(){
+    scanf(a)
+    printf("aaa")
+    return ('a')
+}
+void g(){
+    return
+}
+void main(){
+    a = 10
+
+    f()
+    ;;;;
+    b=3
+    for(a=0 a<10 a=a+1){
+        a = f();
+    }
+}

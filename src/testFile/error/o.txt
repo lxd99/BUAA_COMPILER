@@ -1,0 +1,9 @@
+const int a=+1,b='c',c=1;
+const char d=-4+'a',e='c';
+const int f=+3,g=a;
+const char h='a'+e;
+const int i=+1-h;
+const int j=k();
+
+int k(){return (1);}
+void main(){;}

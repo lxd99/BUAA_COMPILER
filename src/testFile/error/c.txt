@@ -1,0 +1,13 @@
+int a;
+
+void fun2(int var){
+    b=1;
+}
+
+void main(){
+    for(b=0;1<10;c=a+1){
+        ;
+    }
+    fun1();
+    a = a*2+4/fun2(k);
+}

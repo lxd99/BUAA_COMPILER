@@ -1,0 +1,18 @@
+const int const2 = -1?0;
+const char const4='c;
+const char const5=';;
+const int 4_a=-1;
+int change1;&
+int ^y;
+char 0a;
+int gets1(int var1,int var2){
+    int $a;
+    if(1!2)
+    return (change1);
+}
+void main(){
+    const int a=0,b=+03;
+    printf("Hello World");
+    printf("Hello World);
+    printf("this is,const2);
+}

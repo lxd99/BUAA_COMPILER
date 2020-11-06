@@ -6,12 +6,16 @@
 #include<vector>
 
 using  namespace std;
-void duck(int a, int b = 5) {
-	printf("%d\n", a + b);
-}
+#define STRTINT(s,n) \
+	do{\
+		for(auto i : (s)) \
+			(n) = (n) * 10 + i - '0';\
+	}while(0);
+void duck(int a,int b){}
 int _main() {
-	vector<int> vec[3] = { {0,1} };
-	//printf("%d %d %d\n", vec[0].size(), vec[1].size(), vec[2].size());
-	duck(6);
+	string ss = "123456";
+	int n = 0;
+	STRTINT(ss, n);
+	printf("%d\n", n);
 	return 0;
 }

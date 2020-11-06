@@ -1,0 +1,13 @@
+const int a=10;
+const char b='b';
+int f(){
+    a=b;
+    return (a);
+}
+void main(){
+    for(a=6;a<b+1;b=a+1){
+        b=a;
+    }
+    b=f();
+    return ;
+}
