@@ -1,5 +1,4 @@
-﻿#define  _CRT_SECURE_NO_WARNINGS
-#ifndef symFirst
+﻿#ifndef symFirst
 #define symFirst 
 #include<cstdio>
 #include<string>
@@ -8,6 +7,8 @@
 #include<map>
 #include<iostream>
 using namespace  std;
+#define CDEBUG 0
+#define YDEBUG 0
 #define INITIAL -3
 #define ERROR -2
 #define IDENFR 0
@@ -80,9 +81,9 @@ struct word {
 		return line < mwd.line;
 	}
 };
-void addWord(int num,string s,int mode = 0);
+void addWord(int num,string s,int mode = CDEBUG);
 void getsym(FILE* fp);
-void check(word wd,int mode =1);
+void check(word wd,int mode =0);
 /*语法分析*/
 #define INTFUN     0
 #define CHARFUN    1
@@ -95,5 +96,6 @@ void check(word wd,int mode =1);
 #define HASRETURN(x) ((x)==INTFUN||(x)==CHARFUN)
 #define NORETURN(x) ((x)==VOIDFUN)
 word next(int mode=1);
-void addSen(string s ="",int mode=0);
+void addSen(string s = "", int mode = YDEBUG);
+void program();
 #endif //

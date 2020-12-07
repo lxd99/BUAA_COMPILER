@@ -24,12 +24,24 @@
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</DeploymentContent>
     </ClCompile>
     <ClCompile Include="src\core\cf.cpp" />
-    <ClCompile Include="src\core\header.h" />
+    <ClCompile Include="src\core\fcode.cpp" />
+    <ClCompile Include="src\core\gram.h" />
     <ClCompile Include="src\core\main.cpp" />
+    <ClCompile Include="src\core\mcode.cpp" />
     <ClCompile Include="src\core\yf.cpp" />
     <ClCompile Include="src\test.cpp" />
     <Text Include="error.txt" />
+    <Text Include="mips.txt" />
     <Text Include="src\autoC\stdformat.txt" />
+    <Text Include="src\testFile\race\input1.txt" />
+    <Text Include="src\testFile\race\input2.txt" />
+    <Text Include="src\testFile\race\input3.txt" />
+    <Text Include="src\testFile\race\output1.txt" />
+    <Text Include="src\testFile\race\output2.txt" />
+    <Text Include="src\testFile\race\output3.txt" />
+    <Text Include="src\testFile\race\testfile1.txt" />
+    <Text Include="src\testFile\race\testfile2.txt" />
+    <Text Include="src\testFile\race\testfile3.txt" />
     <Text Include="src\testFile\testfile1.txt" />
     <Text Include="src\testFile\testfile2.txt" />
     <Text Include="src\testFile\testfile3.txt" />
@@ -50,6 +62,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
+    <ClInclude Include="src\core\fcode.h" />
+    <ClInclude Include="src\core\mcode.h" />
     <ClInclude Include="src\core\symb.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

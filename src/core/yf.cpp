@@ -1,12 +1,19 @@
-﻿#include "header.h"
+﻿#define  _CRT_SECURE_NO_WARNINGS
+#include "gram.h"
 #include "symb.h"
+#include "mcode.h"
 //#define debug
+extern int dept;
 extern vector<word> wordList;
 #define errors(num) { backto(num); status = -1; return 1;}
-word wd;
-int pos = -1;
+static int pos = -1;
 int pre = 0;
+int stablen = 0;
+int ifid = 0,repid = 0,swid=0;
+static char sbuf[150];
+word wd;
 symbtable symtab;
+map<string, int> strtab;
 word next(int mode) {
 	static int len = wordList.size() - 1;
 	if (pos < len) return wordList[++pos];
@@ -18,10 +25,10 @@ void out() {
 		check(wordList[pre++], 1);
 
 }
-void back() {
+static void back() {
 	if (pos > 0) pos--;
 }
-void error(word mwd, string s, int mode, int isout) {
+void error(word mwd, string s = "", int mode = 'a', int isout = WASYMB) {
 	if (mode == SSEMICN || mode == SRPARENT || mode == SRBRACK) mwd = wordList[pos - 1];
 #ifdef debug	
 	if (isout) printf("%d %d %s %c\n", mwd.line,wd.no,s.c_str(),mode);
@@ -36,10 +43,17 @@ void error(word mwd, string s, int mode, int isout) {
 		next();
 	}
 }
+#define GETPARPOS(x) do {\
+	for(auto i  = (x).rbegin();i!=(x).rend();++i){\
+		(*i)->pos = size;\
+		size += (*i)->getSize();\
+	}\
+}while(0)
 void addSen(string s, int mode) {
 	if (mode) {
 		out();
 		printf("%s\n", s.c_str());
+		fflush(stdout);
 		//cout << s << endl;
 	}
 }
@@ -83,11 +97,13 @@ void program() {
 	*/
 	static string s = "<程序>";
 	static int pre = pos;
+	int size = 0;
 	if (wd.type == CONSTTK)	consExplain(0);
 	word mwd = next(0), mwd1 = next(0); back(); back();
-	if (ISTYPE(wd.type) && mwd.type==IDENFR && mwd1.type != LPARENT) varExplain((symbol*)0);
+	if (ISTYPE(wd.type) && mwd.type==IDENFR && mwd1.type != LPARENT) varExplain((symbol*)0,size);
 	no_Has();
 	mainFun();
+	endc();
 	addSen(s);
 }
 void consDef(symbol * scope) {
@@ -172,10 +188,9 @@ void consExplain(symbol * scope) {
 		if (wd.type == CONSTTK) continue;
 		break;
 	}
-
 	addSen(s);
 }
-void varExplain(symbol *scope) {
+void varExplain(symbol *scope,int& size) {
 	/*
 	＜变量定义＞;{＜变量定义＞;}
 	FOLLOW: "int xx()" "char xx()"  FIRST(语句)
@@ -185,7 +200,7 @@ void varExplain(symbol *scope) {
 	static int type = preDeal(1, 2, vec[0], vec[1], vec[2]);
 	int status = 0;
 	while (true) {
-		varDef(scope);
+		varDef(scope,size);
 		if (wd.type != SEMICN) error(wd,s,SSEMICN);
 		wd = next();
 		if (!ISTYPE(wd.type)) break;
@@ -196,7 +211,7 @@ void varExplain(symbol *scope) {
 
 	addSen(s);
 }
-void varDef(symbol * scope) {
+void varDef(symbol * scope,int &size) {
 	/*
 	＜变量定义无初始化＞|＜变量定义及初始化＞
 	*/
@@ -211,11 +226,11 @@ void varDef(symbol * scope) {
 		preDeal(1, 7, vec[0] = {IDENFR, LBRACK, INTCON, RBRACK, LBRACK, INTCON, ASSIGN},vec[1],vec[2]) == 1||
 		preDeal(1, 6, vec[0] = {IDENFR, LBRACK, INTCON, LBRACK, INTCON, ASSIGN}, vec[1], vec[2]) == 1
 		)
-		varIniDef(scope);
-	else varNoIniDef(scope);
+		varIniDef(scope,size);
+	else varNoIniDef(scope,size);
 	addSen(s);
 }
-void varIniDef(symbol * scope) {
+void varIniDef(symbol * scope,int &size) {
 	/*
 	＜类型标识符＞＜标识符＞=＜常量＞|
 	＜类型标识符＞＜标识符＞'['＜无符号整数＞']'='{'＜常量＞{,＜常量＞}'}'|
@@ -232,12 +247,12 @@ void varIniDef(symbol * scope) {
 	wd = next();
 	if (wd.type == LBRACK) {
 		BRACK(n);
-		symb->size.push_back(n);
+		symb->dim.push_back(n);
 		if (wd.type == LBRACK) {//[][]=
 			BRACK(n);
 
-			symb->size.push_back(n);
-			DARRAY(symb->size[0], symb->size[1], value.da);
+			symb->dim.push_back(n);
+			DARRAY(symb->dim[0], symb->dim[1], value.da);
 			symb->form = ARRAYF;
 
 			if (wd.type != ASSIGN) error(wd,s);
@@ -252,24 +267,24 @@ void varIniDef(symbol * scope) {
 					con(n,type);
 
 					if (type != symb->type) error(wd,s,CONTYPE);
-					if (cnt0 < symb->size[0] && cnt1 < symb->size[1]) value.da[cnt0][cnt1] = n;
+					if (cnt0 < symb->dim[0] && cnt1 < symb->dim[1]) value.da[cnt0][cnt1] = n;
 					cnt1++;
 					if (wd.type == COMMA) continue;
 					else if (wd.type == RBRACE)	break;
 					else error(wd,s);
 				}
-				if (cnt1 != symb->size[1]) iserror = 1;
+				if (cnt1 != symb->dim[1]) iserror = 1;
 				cnt0++; cnt1 = 0;
 				wd = next();
 				if (wd.type == COMMA) continue;
 				else if (wd.type == RBRACE) break;
 				else error(wd,s);
 			}
-			if (iserror || cnt0 != symb->size[0]) error(wd,s, ARRYNUM);
+			if (iserror || cnt0 != symb->dim[0]) error(wd,s, ARRYNUM);
 		}
 		else if (wd.type == ASSIGN) { //[]=
 			int cnt = 0;
-			value.sa = new int[symb->size[0]];
+			value.sa = new int[symb->dim[0]];
 			symb->form = ARRAYF;
 
 			wd = next();
@@ -278,13 +293,13 @@ void varIniDef(symbol * scope) {
 				wd = next();
 				con(n,type);
 				if (type != symb->type) error(wd, s, CONTYPE);
-				if (cnt < symb->size[0]) value.sa[cnt] = n;
+				if (cnt < symb->dim[0]) value.sa[cnt] = n;
 				cnt++;
 				if (wd.type == COMMA)	continue;
 				else if (wd.type == RBRACE) break;
 				else error(wd,s);
 			}
-			if (cnt != symb->size[0]) error(wd, s, ARRYNUM);
+			if (cnt != symb->dim[0]) error(wd, s, ARRYNUM);
 		}
 		else error(wd,s);
 		wd = next();
@@ -299,10 +314,15 @@ void varIniDef(symbol * scope) {
 	else error(wd,s);
 	symb->value = value;
 	symb->scope = scope;
+	symb->isIni = true;
+	symb->pos = size;
+	size += symb->getSize();
 	if (!symtab.insert(symb)) error(symb->wd,s,DUPNAME);
+	inic(new Data(VARADD, symb));
+
 	addSen(s);
 }
-void varNoIniDef(symbol *scope) {
+void varNoIniDef(symbol *scope,int &size) {
 	/*
 	＜类型标识符＞(＜标识符＞|＜标识符＞'['＜无符号整数＞']'|＜标识符＞'['＜无符号整数＞']''['＜无符号整数＞']')
 	{,(＜标识符＞|＜标识符＞'['＜无符号整数＞']'|＜标识符＞'['＜无符号整数＞']''['＜无符号整数＞']' )}
@@ -321,14 +341,18 @@ void varNoIniDef(symbol *scope) {
 		wd = next();
 		if (wd.type == LBRACK) {
 			BRACK(n);
-			symb->size.push_back(n);
-			if (wd.type == LBRACK)
+			symb->dim.push_back(n);
+			if (wd.type == LBRACK) {
 				BRACK(n);
-			symb->size.push_back(n);
+				symb->dim.push_back(n);
+			}
 		}
-		if (symb->size.size() > 0) symb->form = ARRAYF;
+		if (symb->dim.size() > 0) symb->form = ARRAYF;
 		else symb->form = VARF;
+		symb->pos = size;
 		if (!symtab.insert(symb)) error(symb->wd, s, DUPNAME);
+		if (scope == 0)  inic(new Data(VARADD, symb));
+		size += symb->getSize();
 		symb = new symbol;
 		symb->scope = scope;
 		symb->type = type;
@@ -348,7 +372,7 @@ void con(int &n,int &type) {
 	}
 	else {
 		if (wd.type == ERROR) error(wd, s, WASYMB);
-		n = 0;
+		n = wd.s[0];
 		wd = next();
 		type = CTYPE;
 	}
@@ -385,9 +409,11 @@ void hasReturnFun() {
 	FOLLOW: 无返回|主函数
 	*/
 	static string s = "<有返回值函数定义>";
+	int size = 0;
 	symbol *symb = new symbol;
 	symb->scope = 0; symb->form = FUNF;
 	declareHead(symb);
+	Data* srcl = new Data(VARADD, symb);
 	if (wd.type != LPARENT) error(wd,s);
 
 	wd = next();
@@ -398,13 +424,17 @@ void hasReturnFun() {
 	wd = next();
 	if (wd.type != LBRACE) error(wd,s);
 
+	declarec(srcl);
 	wd = next();
-	compSen(symb);
+	compSen(symb,size);
 	if (wd.type != RBRACE) error(wd,s);
 
 	if (symb->retcnt == 0) error(wd,s,HASNORET);
 	wd = next();
 	addSen(s);
+	size += 8;
+	GETPARPOS(symb->parList);
+	retc(new Data(CONSADD,0), new Data(VARADD, symb));
 }
 void declareHead(symbol *symb) {
 	/*
@@ -453,7 +483,7 @@ void parList(vector<symbol*> &parList,symbol * scope) {
 
 	addSen(s);
 }
-void compSen(symbol * scope) {
+void compSen(symbol * scope,int& size) {
 	/*
 	［＜常量说明＞］［＜变量说明＞］＜语句列＞
 	 FOLLOW; }
@@ -461,7 +491,7 @@ void compSen(symbol * scope) {
 	*/
 	static string s = "<复合语句>";
 	if (ISCONST(wd.type)) consExplain(scope);
-	if (ISTYPE(wd.type)) varExplain(scope);
+	if (ISTYPE(wd.type)) varExplain(scope,size);
 	senList(scope);
 
 	addSen(s);
@@ -493,10 +523,11 @@ void sentence(symbol * scope) {
 		word mwd = next(0); back();
 		if (mwd.type == ASSIGN||mwd.type==LBRACK) assignSen(scope);
 		else {
+			Data* srcl;
 			auto it = symtab.findt(wd.ss, scope);
 			if (it<0) error(wd,s,NONAME);
-			if (it==ITYPE||it==CTYPE) hasCallSen(scope);
-			else noCallSen(scope);
+			if (it==ITYPE||it==CTYPE) hasCallSen(scope,srcl);
+			else noCallSen(scope,srcl);
 		}	
 		if (wd.type != SEMICN) error(wd,s,SSEMICN);
 		wd = next();
@@ -539,12 +570,17 @@ void repSen(symbol * scope) {
 	while '('＜条件＞')'＜语句＞| for'('＜标识符＞＝＜表达式＞;＜条件＞;＜标识符＞＝＜标识符＞(+|-)＜步长＞')'＜语句＞
 	*/
 	static string s = "<循环语句>";
-	int type = -1;
+	string lab1,lab2;
+	int type = -1,mid = repid++;
+	Data *srcl = new Data(), *srcr = new Data();
+	SAPP(0, lab1, "%s_%d_rep1", PRELAB, mid);
 	if (wd.type == WHILETK) {
+		glabc(lab1);
 		wd = next();
 		if (wd.type != LPARENT) error(wd,s);
 		wd = next();
-		condition(scope);
+		SAPP(0, lab2, "%s_%d_rep2", PRELAB, mid);
+		condition(scope,lab2);
 		if (wd.type != RPARENT) error(wd,s,SRPARENT);
 		wd = next();
 		sentence(scope);
@@ -554,14 +590,20 @@ void repSen(symbol * scope) {
 		if (wd.type != LPARENT) error(wd,s);
 		wd = next();
 		CHECKWD(type);//IDENFR
+		srcl = new Data(VARADD, symtab.find(wd.s,scope));
+
 		wd = next();
 		if (wd.type != ASSIGN) error(wd,s);
 		wd = next();
-		expression(scope,type);
-		if (wd.type != SEMICN) error(wd,s,SSEMICN);
+		expression(scope,type,srcr);
+		
+		assignc(srcr, srcl);
+		glabc(lab1);
 
+		if (wd.type != SEMICN) error(wd,s,SSEMICN);
 		wd = next();
-		condition(scope);
+		SAPP(0, lab2, "%s_%d_rep_2", PRELAB,mid);
+		condition(scope,lab2);
 		if (wd.type != SEMICN) error(wd,s,SSEMICN);
 
 		wd = next();
@@ -571,16 +613,25 @@ void repSen(symbol * scope) {
 		wd = next();
 		CHECKWD(type); //IDENFER
 		wd = next();
+		int op = wd.type == PLUS ? 1 : 0;
 		if (wd.type != PLUS && wd.type != MINU) error(wd,s);
 		wd = next();
-		stepLen();
+		stepLen(srcr);
 
 		if (wd.type != RPARENT) error(wd,s,SRPARENT);
 		wd = next();
 		sentence(scope);
+
+		if (op) addc(srcl, srcr, srcr);
+		else subc(srcl, srcr, srcr);
+		assignc(srcr, srcl);
 	}
 	else error(wd,s);
 
+	srcl = new Data(LABADD, 0);
+	srcl->s = lab1;
+	jumpc(srcl);
+	glabc(lab2);
 	addSen(s);
 }
 void condSen(symbol * scope) {
@@ -588,22 +639,36 @@ void condSen(symbol * scope) {
 	if '('＜条件＞')'＜语句＞［else＜语句＞］
 	*/
 	static string s = "<条件语句>";
+	int mid = ifid++;
+	string if1,if2;
+	SAPP(0, if1, "%s_%d_if1",PRELAB,mid);
+	SAPP(0, if2, "%s_%d_if2", PRELAB, mid);
 	if (wd.type != IFTK) error(wd,s);
 	wd = next();
 	if (wd.type != LPARENT) error(wd,s);
 	wd = next();
-	condition(scope);
+	condition(scope,if1);
 	if (wd.type != RPARENT) error(wd,s,SRPARENT);
 	wd = next();
 	sentence(scope);
+
 	if (wd.type == ELSETK) {
+		Data* srcl = new Data(LABADD, 0);
+		srcl->s = if2;
+
+		jumpc(srcl);
+		glabc(if1);
+		
 		wd = next();
 		sentence(scope);
-	}
 
+		glabc(if2);
+	}
+	else glabc(if1);
+	
 	addSen(s);
 }
-void hasCallSen(symbol *scope) {
+void hasCallSen(symbol *scope,Data *&des) {
 	/*
 	＜标识符＞'('＜值参数表＞')'
 	*/
@@ -615,12 +680,12 @@ void hasCallSen(symbol *scope) {
 	if (wd.type != LPARENT) error(wd,s);
 	wd = next();
 	valParList(scope,fun->parList);
+	callc(fun, des);
 	if (wd.type != RPARENT) error(wd,s,SRPARENT);
 	wd = next();
-
 	addSen(s);
 }
-void noCallSen(symbol *scope) {
+void noCallSen(symbol *scope,Data *&des) {
 	/*
 	 ＜标识符＞'('＜值参数表＞')'
 	*/
@@ -632,6 +697,7 @@ void noCallSen(symbol *scope) {
 	if (wd.type != LPARENT) error(wd,s);
 	wd = next();
 	valParList(scope,fun->parList);
+	callc(fun, des);
 	if (wd.type != RPARENT) error(wd,s,SRPARENT);
 	wd = next();
 
@@ -645,10 +711,12 @@ void valParList(symbol * scope,vector<symbol*> parList) {
 	*/
 	static string s = "<值参数表>";
 	int len = parList.size(), no = 0, iserror = 0,type;
+	Data* srcl = new Data();
 	while (ISEXPB(wd.type)){
 		word mwd = wd;
-		expression(scope,type);
+		expression(scope,type,srcl);
 		if (no < len && type != parList[no]->type) error(mwd,s,PARTYPE); //恶意换行
+		pushc(new Data(VARADD, parList[no]), srcl);
 		no++;
 		if (wd.type != COMMA) break;
 		wd = next();
@@ -662,19 +730,27 @@ void assignSen(symbol * scope) {
 	*/
 	static string s = "<赋值语句>";
 	int type=-1;
+	Data* srcl = new Data(), *exp = new Data();
+	symbol* symb;
 	CHECKWD(type);
-	if (symtab.findf(wd.ss, scope) == CONSF) error(wd, s, MODCONS);
+	symb = symtab.find(wd.ss, scope);
+	if (symb==0||symb->form == CONSF) error(wd, s, MODCONS);
 	wd = next();
 	if (wd.type == LBRACK) {
 		wd = next();
-		expression(scope,type);
+		expression(scope,type,srcl);
 		if (wd.type != RBRACK) error(wd,s,SRBRACK);
 		wd = next();
-		if (wd.type == ASSIGN) wd = next();
-		
+		if (wd.type == ASSIGN) {
+			srcl= new Data(VARADD, symb,srcl);
+			wd = next();
+		}
 		else if (wd.type == LBRACK) {
 			wd = next();
-			expression(scope,type);
+			multc(srcl, new Data(CONSADD, (void*)symb->dim[1]), srcl);
+			expression(scope,type,exp);
+			addc(srcl, exp, srcl);
+			srcl= new Data(VARADD, symb, srcl);
 			if (wd.type != RBRACK) error(wd,s,SRBRACK);
 			wd = next();
 			if (wd.type != ASSIGN) error(wd,s);
@@ -684,10 +760,11 @@ void assignSen(symbol * scope) {
 	}
 	else if (wd.type == ASSIGN) {
 		wd = next();
-		
+		srcl = new Data(VARADD, symb);
 	}
 	else error(wd,s);
-	expression(scope,type);
+	expression(scope,type,exp);
+	assignc(exp, srcl);
 	addSen(s);
 }
 void readSen(symbol * scope) {
@@ -696,16 +773,19 @@ void readSen(symbol * scope) {
 	*/
 	static string s = "<读语句>";
 	int type = -1;
+	Data* srcl;
 	if (wd.type != SCANFTK) error(wd,s);
 	wd = next();
 	if (wd.type != LPARENT) error(wd,s);
 	wd = next();
 	CHECKWD(type);
-	auto it = symtab.find(wd.ss, scope);
-	if (it !=0&&it->form == CONSF) error(wd,s,MODCONS);
+	symbol* symb = symtab.find(wd.ss, scope);
+	srcl = new Data(VARADD, symb);
+	if (symb !=0&&symb->form == CONSF) error(wd,s,MODCONS);
 	wd = next();
 	if (wd.type != RPARENT) error(wd,s,SRPARENT);
 	wd = next();
+	readc(srcl);
 	addSen(s);
 }
 void writeSen(symbol * scope) {
@@ -714,18 +794,27 @@ void writeSen(symbol * scope) {
 	*/
 	static string s = "<写语句>";
 	int type = -1;
+	Data* srcl = new Data;
 	if (wd.type != PRINTFTK) error(wd,s);
 	wd = next();
 	if (wd.type != LPARENT) error(wd,s);
 	wd = next();
 	if (!ISEXPB(wd.type)) {
+		string ms = wd.s;
 		str();
+		srcl= new Data(STRADD, (void*)strtab.find(ms)->second);
+		srcl->isinf.ise = wd.type==COMMA?0:1;
+		printc(srcl);
 		if (wd.type == COMMA) {
 			wd = next();
-			expression(scope,type);
+			expression(scope,type,srcl);
+			printc(srcl);
 		}
 	}
-	else expression(scope,type);
+	else {
+		expression(scope, type, srcl);
+		printc(srcl);
+	}
 
 	if (wd.type != RPARENT) error(wd,s,SRPARENT);
 	wd = next();
@@ -737,6 +826,9 @@ void str() {
 	 "｛十进制编码为32,33,35-126的ASCII字符｝"
 	*/
 	static string s = "<字符串>";
+	if (strtab.emplace(wd.s, stablen).second) {
+		stablen += 1;
+	}
 	if (wd.type != STRCON) error(wd,s,WASYMB);
 	wd = next();
 
@@ -747,21 +839,29 @@ void situaSen(symbol * scope) {
 	switch ‘(’＜表达式＞‘)’ ‘{’＜情况表＞＜缺省＞‘}’
 	*/
 	static string s = "<情况语句>";
-	int type = -1;
+	int type = -1,mid = swid++;
+	Data* srcl = new Data(),*srcr;
+	
+	string ms;
+	SAPP(0, ms, "%s_%d_switch_end", PRELAB, mid);
+	srcr = new Data(LABELOP, 0); srcr->s = ms;
+
 	if (wd.type != SWITCHTK) error(wd,s);
 	wd = next();
 	if (wd.type != LPARENT) error(wd,s);
 	wd = next();
-	expression(scope,type);
+	expression(scope,type,srcl);
 	if (wd.type != RPARENT) error(wd,s,SRPARENT);
 	wd = next();
 	if (wd.type != LBRACE) error(wd,s);
 	wd = next();
-	caseTable(scope,type);
+	caseTable(scope,type,srcl,srcr,mid);
+
 
 	if (wd.type != DEFAULTTK) error(wd,s,SDEFAULT);
 	else defaul(scope);
 
+	glabc(srcr->s);
 	if (wd.type != RBRACE) error(wd,s);
 	wd = next();
 	addSen(s);
@@ -774,11 +874,12 @@ void returnSen(symbol * scope) {
 	static string s = "<返回语句>";
 	int type = -1;
 	scope->retcnt++;
+	Data* srcl = 0;
 	if (wd.type != RETURNTK) error(wd,s);
 	wd = next();
 	if (wd.type == LPARENT) {
 		wd = next();
-		if (ISEXPB(wd.type)) expression(scope, type); //hasProblem
+		if (ISEXPB(wd.type)) expression(scope, type,srcl); //hasProblem
 		if (type != scope->type) {
 			if (scope->type == VTYPE) error(wd, s, NOHASRET);
 			else error(wd, s, HASNORET);
@@ -787,6 +888,7 @@ void returnSen(symbol * scope) {
 		wd = next();
 	}
 	else if (scope->type != VTYPE) error(wd, s, HASNORET);
+	retc(srcl,new Data(VARADD,scope));
 	addSen(s);
 }
 
@@ -795,12 +897,12 @@ void noReturnFun() {
 	void＜标识符＞'('＜参数表＞')''{'＜复合语句＞'}'
 	*/
 	static string s = "<无返回值函数定义>";
-	int type = -1;
+	int type = -1,size=0;
 	symbol *symb = new symbol;
 	symb->scope = 0; 
 	symb->form = FUNF; 
 	symb->type = VTYPE;
-
+	Data* srcl = new Data(VARADD,symb);
 	if (wd.type != VOIDTK) error(wd,s);
 	wd = next();
 	if (wd.type != IDENFR) error(wd, wd.s);
@@ -813,122 +915,180 @@ void noReturnFun() {
 	wd = next();
 	if (wd.type != LBRACE) error(wd,s);
 	wd = next();
-	compSen(symb);
+
+	declarec(srcl);
+
+	if (!symtab.insert(symb)) error(symb->wd, s, DUPNAME);
+	compSen(symb,size);
 	if (wd.type != RBRACE) error(wd,s);
 	wd = next();
-	if (!symtab.insert(symb)) error(symb->wd,s,DUPNAME);
 	addSen(s);
+	size += 8;
+	GETPARPOS(symb->parList);
+	retc(0, new Data(VARADD, symb));
 }
-void expression(symbol * scope,int& type) {
+void expression(symbol * scope,int& type,Data *&des) {
 	/*
 	[＋｜－]＜项＞{＜加法运算符＞＜项＞}
 	FOLLOW: ] )  ; == >= <= !=
 	*/
 	static string s = "<表达式>";
-	int mtype = -1; type = -1;
+	int mtype = -1,f=1; type = -1;
+	Data *srcl,*srcr;
+	srcl = new Data;
+	srcr = new Data;
 	if (wd.type == PLUS || wd.type == MINU) {
+		if (wd.type == MINU) f = -1;
 		wd = next();
 		type = ITYPE;
 	}
-	item(scope,mtype);
+	item(scope,mtype,srcl);
+	if (f == -1) negc(srcl,srcl);
 	if (mtype == ITYPE) type = ITYPE;
 	while (wd.type == PLUS || wd.type == MINU) {
+		f = wd.type == PLUS ? 1 : -1;
 		wd = next();
-		item(scope,mtype);
+		item(scope,mtype,srcr);
 		type = ITYPE;
+		if (f == 1) addc(srcl, srcr, srcl);
+		else subc(srcl, srcr, srcl);
 	}
 	if (type != ITYPE) type = CTYPE;
+	des = srcl;
 	addSen(s);
 }
-void item(symbol* scope,int &type) {
+void item(symbol* scope,int &type,Data *&des) {
 	/*
 	＜因子＞{＜乘法运算符＞＜因子＞}
 	FOLLOW: ; ] ) + -
 	*/
 	static string s = "<项>";
-	int mtype = -1;
-	factor(scope,mtype);
+	int mtype = -1,f=0;
+	Data *srcl, *srcr;
+	srcl = new Data;
+	srcr = new Data;
+	factor(scope,mtype,srcl);
 	if (mtype == ITYPE) type = ITYPE;
 	while (wd.type == MULT || wd.type == DIV) {
+		f = wd.type == MULT ? 1 : -1;
 		wd = next();
-		factor(scope,mtype);
+		factor(scope,mtype,srcr);
 		type = ITYPE;
+		if (f == 1) multc(srcl, srcr, srcl);
+		else divc(srcl, srcr, srcl);
 	}
 	if (type != ITYPE) type = CTYPE;
+	des = srcl;
 	addSen(s);
 }
-void factor(symbol * scope,int &type) {
+void factor(symbol * scope,int &type,Data *&des) {
 	/*
 	＜标识符＞｜＜标识符＞'['＜表达式＞']'|＜标识符＞'['＜表达式＞']''['＜表达式＞']'|'('＜表达式＞')'｜＜整数＞|＜字符＞｜＜有返回值函数调用语句＞
 	*/
 	static string s = "<因子>";
-	int n,mtype = -1;
+	int mtype = -1;
+	Data *srcl, *srcr;
+	symbol* symb;  // local use
+	srcl = new Data;
+	srcr = new Data;
 	if (wd.type == IDENFR) {
 		CHECKWD(mtype);//IDENFER
+		symb = symtab.find(wd.ss, scope);
 		if (mtype == ITYPE) type = ITYPE;
 		word mwd = next(0); back();
 		if (mwd.type == LBRACK) {
 			wd = next();
-			EBRACK(scope, mtype);
+			EBRACK(scope, mtype,srcl);
 			if (wd.type == LBRACK) {
-				EBRACK(scope, mtype);
+				multc(srcl, new Data(CONSADD, (void*)symb->dim[1], (void*)0), srcl);
+				EBRACK(scope, mtype, srcr);
+				addc(srcl, srcr, srcl);
 			}
+			srcl = new Data(VARADD, symb, srcl);
 		}
 		else if (mwd.type == LPARENT) {
-			auto it =symtab.find(wd.ss,scope);
-			if (it->type==VTYPE) error(wd, s);
-			type = it->type;
-			hasCallSen(scope);
+			symb =symtab.find(wd.ss,scope);
+			if (symb->type==VTYPE) error(wd, s);
+			type = symb->type;
+			hasCallSen(scope,srcl);
 		}
 		else {
-			mtype = symtab.findt(wd.ss, scope);
-			if (mtype == ITYPE) type = mtype;
+			symb = symtab.find(wd.ss, scope);
+			if (symb->type == ITYPE) type = symb->type;
 			wd = next();
+			srcl = new Data(VARADD, symb);
 		}
+		if (symb->type == CTYPE) srcl->isinf.isc = 1;
 	}
 	else if (wd.type == LPARENT) {
 		type = ITYPE;
 		wd = next();
-		expression(scope,mtype);
+		expression(scope,mtype,srcl);
 		if (wd.type != RPARENT) error(wd, s, SRPARENT);
+		srcl->isinf.isc = 0;
 		wd = next();
 
 	}
 	else if (wd.type == MINU || wd.type == PLUS || wd.type == INTCON) {
-		integer(mtype);
+		srcl = new Data(CONSADD,0);
+		integer(srcl->cont.cons);
 		type = ITYPE;
 	}
-	else if (wd.type == CHARCON)
+	else if (wd.type == CHARCON) {
+		srcl= new Data(CONSADD, (void *)(wd.s[0]));
+		srcl->isinf.isc = 1;
 		wd = next();
+	}
 	else {
 		error(wd, s,WASYMB);
 		wd = next();
 	}
 	if (type != ITYPE) type = CTYPE;
+	des = srcl;
 	addSen(s);
 }
-void caseTable(symbol * scope,int type) {
+void caseTable(symbol * scope,int type,Data *exp,Data *end,int mid) {
 	/*
 	＜情况子语句＞{＜情况子语句＞}
 	FOLLOW: default
+	srcl-->需要比较,srcr-->end地址,des-->下一个地址
 	*/
 	static string s = "<情况表>";
-	subCase(scope,type);
+	string ms;
+	int id = 0;
+	
+	SAPP(0, ms, "%s_%d_switch%d", PRELAB, mid, id++);
+	Data* nex = new Data(LABADD,0);
+	nex->s = ms;
+
+	subCase(scope,type,exp,nex,mid);
 	while (wd.type == CASETK) {
-		subCase(scope,type);
+		jumpc(end);
+		glabc(ms);
+
+		SAPP(0, ms, "%s_%d_switch%d", PRELAB, mid, id++);
+		nex = new Data(LABADD, 0);
+		nex->s = ms;
+
+		subCase(scope,type,exp,nex,mid);
 	}
+	jumpc(end);
+	glabc(ms);
 
 	addSen(s);
 }
-void subCase(symbol *scope,int type) {
+void subCase(symbol *scope,int type,Data *exp,Data *nex,int mid) {
 	/*
 	case＜常量＞：＜语句＞
 	*/
 	static string s = "<情况子语句>";
 	int mtype=-1,n=0;
+	Data* srcl;
 	if (wd.type != CASETK) error(wd,s);
 	wd = next();
 	con(n,mtype);
+	srcl = new Data(CONSADD, (void*)n);
+	condjc(EQL,srcl,exp,nex);
 	if (mtype != type) error(wd, s,CONTYPE);
 	if (wd.type != COLON) error(wd,s);
 	wd = next();
@@ -948,26 +1108,34 @@ void defaul(symbol * scope) {
 
 	addSen(s);
 }
-void stepLen() {
+void stepLen(Data * &des) {
 	/*
 	＜无符号整数＞
 	*/
 	static string s = "<步长>";
 	int n = 0;
 	noSignInt(n);
+
+	Data* srcl = new Data(CONSADD, (void*)n);
+	des = srcl;
 	addSen(s);
 }
-void condition(symbol * scope) {
+void condition(symbol * scope,string ms) {
 	/*
 	＜表达式＞＜关系运算符＞＜表达式＞
 	*/
 	static string s = "<条件>";
-	int type1=-1,type2=-1;
-	expression(scope,type1);
+	Data* srcl,*srcr,*des;
+	int type1=-1,type2=-1,op = -1;
+	expression(scope,type1,srcl);
 	if (!ISRELATEOP(wd.type)) error(wd,s);
+	op = wd.type;
 	wd = next();
-	expression(scope,type2);
+	expression(scope,type2,srcr);
 
+	des = new Data(LABADD, 0);
+	des->s = ms;
+	condjc(op,srcl,srcr,des);
 	if (type1 != ITYPE||type2 !=ITYPE) error(wd,s,IFTYPE);
 	addSen(s);
 }
@@ -976,6 +1144,7 @@ void mainFun() {
 	void main‘(’‘)’ ‘{’＜复合语句＞‘}’
 	*/
 	static string s = "<主函数>";
+	int size = 0;
 	symbol *symb = new symbol;
 	symb->form = FUNF; 
 	symb->scope = 0;
@@ -985,6 +1154,7 @@ void mainFun() {
 	wd = next();
 	if (wd.type != MAINTK) error(wd,s);
 	symb->wd = wd;
+	if (!symtab.insert(symb)) error(symb->wd,s);
 	wd = next();
 	if (wd.type != LPARENT) error(wd,s);
 	wd = next();
@@ -992,7 +1162,9 @@ void mainFun() {
 	wd = next();
 	if (wd.type != LBRACE) error(wd,s);
 	wd = next();
-	compSen(symb);
+
+	declarec(new Data(VARADD, symb));
+	compSen(symb,size);
 	if (wd.type != RBRACE) error(wd,s);
 	wd = next();
 	addSen(s);

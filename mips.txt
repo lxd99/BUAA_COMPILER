@@ -1,0 +1,31 @@
+.data
+a: .word 15
+x: .word 5
+y: .word 6
+.asciiz
+dxlduckingss_buf:
+.text
+la $ra dxlduckingss_end_dxlduckingss
+dxlduckingss_main:
+addiu $sp $sp -12
+sw $ra 8($sp)
+sw $fp 4($sp)
+move $fp $sp
+li $v0 0
+sw $v0 0($fp)
+lw $v0 0($fp)
+neg $v0 $v0
+addiu $sp $sp -4
+sw $v0 ($sp)
+lw $t7 0($sp)
+sw $t7 0($fp)
+addiu $sp $sp 4
+lw $a0 0($fp)
+li $v0 1
+syscall
+li $a0 10
+li $v0 11
+syscall
+dxlduckingss_end_dxlduckingss:
+li $v0 10
+syscall

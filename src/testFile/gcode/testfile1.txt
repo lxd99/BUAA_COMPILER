@@ -1,0 +1,26 @@
+const int ca = 0;
+const int cb = 5;
+const int cc = -5;
+const char cd = 'e';
+int a =5;
+int b = -55;
+int c = 0;
+char d;
+int x,y;
+void main()
+{
+	int ma = 55;
+	int mb = -6;
+	char mc;
+	scanf(x);
+	printf(x+ mb - ca*a);
+	x = x+mb - ca*a;
+	scanf(mc);
+	scanf(d);
+	printf("mc is",mc);
+	printf("d is",d);
+	printf((mc));
+	printf((d));
+	printf(mc+d);
+
+}

@@ -1,0 +1,23 @@
+#define NEGOP 0
+#define ADDOP 1
+#define SUBOP 2
+#define MULOP 3
+#define DIVOP 4
+#define RETOP 5
+#define PUSHOP 6
+#define ASSIGNOP 7
+#define JGEOP 8
+#define JNEOP 9
+#define JEQOP 10
+#define JLEOP 11
+#define JGTOP 12
+#define JLTOP 13
+#define JOP 14
+#define READOP 15
+#define PRINTOP 16
+#define INIOP 17
+#define CALLOP 18
+#define LABELOP 19
+#define ENDOP 20
+#define DECLAREOP 21
+string opi[22]={"neg","add","sub","mul","div","jr","sw","sw","bge","bne","beq","ble","bgt","blt","j","xxx","xxx","xx","jal","xx","xx","xx"};

@@ -1,4 +1,5 @@
-﻿#include "header.h"
+﻿#define  _CRT_SECURE_NO_WARNINGS
+#include "gram.h"
 vector <word> wordList;
 int line = 1;
 int no = 1;
@@ -7,16 +8,18 @@ string id[39] = { "IDENFR","INTCON","CHARCON","STRCON","CONSTTK","INTTK","CHARTK
 "MINU","MULT","DIV","LSS","LEQ","GRE","GEQ","EQL","NEQ","COLON",
 "ASSIGN","SEMICN","COMMA","LPARENT","RPARENT","LBRACK","RBRACK","LBRACE","RBRACE" };
 void error(int num,string s) {
-	printf("fuck! %s\n", s.c_str());
+	printf("cferror at %d %s\n", line,s.c_str());
 }
 void check(word wd,int mode) {
 	if (mode && wd.type >= 0) {
 		printf("%s %s\n", id[wd.type].c_str(), wd.s.c_str());
+		fflush(stdout);
 	}
 }
 void addWord(int num,string s,int mode) {
 	if (num>=0&&mode) {
 		printf("%s %s\n", id[num].c_str(), s.c_str());
+		fflush(stdout);
 	}
 	wordList.push_back(word(num, s,line,no));
 	no++;

@@ -4,7 +4,7 @@
 #include<cstdlib>
 #include<iostream>
 #include<vector>
-
+#define INIT -5
 using  namespace std;
 #define STRTINT(s,n) \
 	do{\
@@ -13,9 +13,7 @@ using  namespace std;
 	}while(0);
 void duck(int a,int b){}
 int _main() {
-	string ss = "123456";
-	int n = 0;
-	STRTINT(ss, n);
-	printf("%d\n", n);
+	int a = INIT;
+	printf("%d\n", a);
 	return 0;
 }
