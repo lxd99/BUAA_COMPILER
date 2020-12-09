@@ -4,12 +4,11 @@
 /*只能用于mcode中的代码*/
 #define GETDMOVE do \
 { \
-	if((srcl)->type != MVARADD &&(srcr)->type != MVARADD)\
+	if(!ISTID((srcl)) &&!ISTID(srcr))\
 		move = 1;\
-	else if((srcl)->type==MVARADD && (srcr)->type==MVARADD)\
+	else if(ISTID((srcl)) && ISTID((srcr)))\
 		move = -1;\
 	else move = 0;\
-	mcode.move = 0;\
 }while(0)
 int tid = 0;
 int dept = 0;
@@ -24,7 +23,7 @@ void negc(Data *srcl,Data *&des) {
 	Data* mdes = new Data;
 	Mcode mcode;
 	int move = 0;
-	if (dept == 0) move = 1;
+	if (!ISTID(srcl)) move = 1;
 	MODKVAR(mdes, move - 1);
 
 	mcode = Mcode(NEGOP, mdes, srcl);
@@ -106,8 +105,7 @@ void printc(Data* srcl) {
 	static string op = "print ";
 	Mcode mcode = Mcode(PRINTOP, 0, srcl);
 
-	if (srcl->type == MVARADD) {
-		mcode.move = -1;
+	if (ISTID(srcl)) {
 		dept -= 1;
 	}
 		
@@ -118,10 +116,8 @@ void printc(Data* srcl) {
 void assignc(Data* srcl, Data*& des) {
 	static string op = "=";
 	Mcode mcode = Mcode(ASSIGNOP,des,srcl);
-	if (srcl->type == MVARADD) {
-		mcode.move = -1;
-		dept -= 1;
-	}
+	if (ISTID(srcl)) dept -= 1;
+	if (ISTID(des)) dept -= 1;
 	mcode.genS(des->getS() + op + srcl->getS());
 	mcodlis.push(mcode);
 	
@@ -136,10 +132,7 @@ void inic(Data* srcl) {
 void pushc(Data* des, Data* srcl) {
 	static string op = "push ";
 	Mcode mcode = Mcode(PUSHOP,des,srcl);
-	if (des->type == MVARADD) {
-		dept -= 1;
-		mcode.move = -1;
-	}
+	if (ISTID(srcl))  dept -= 1;
 	mcode.genS(op + srcl->getS()); // s形式只输出一部分
 	mcodlis.push(mcode);
 	
@@ -170,7 +163,7 @@ void casec(Data* srcl, Data* srcr, Data *des) {
 	mcode.genS(srcl->getS() + " != " + srcr->getS() + " goto " + des->getS());
 	mcodlis.push(mcode);
 }
-void condjc(int op, Data* srcl, Data* srcr, Data* des,int move) {
+void condjc(int op, Data* srcl, Data* srcr, Data* des) {
 	Mcode mcode;
 	string sop;
 	switch (op)
@@ -202,7 +195,8 @@ void condjc(int op, Data* srcl, Data* srcr, Data* des,int move) {
 		mcode = Mcode(JLTOP, des, srcl, srcr);
 		break;
 	}
-	mcode.move = move;
+	if(ISTID(srcl)) dept -=1;
+	if(ISTID(srcr)) dept -=1;
 	mcode.genS(srcl->getS()+" "+sop+" "+srcr->getS() + " goto "+des->getS());
 	mcodlis.push(mcode);
 }
@@ -213,6 +207,7 @@ void jumpc(Data* des) {
 
 }
 void declarec(Data* srcl) {
+	dept = 0;
 	Mcode mcode = Mcode(DECLAREOP, 0, srcl);
 	mcode.genS("declare " + srcl->getS());
 	mcodlis.push(mcode);
@@ -226,9 +221,8 @@ void retc(Data* srcl,Data *srcr) {
 	else mcode.genS("ret null");
 	mcodlis.push(mcode);
 }
-void glabc(string s,int move) {
+void glabc(string s) {
 	Mcode mcode;
-	mcode.move = move;
 	mcode.op = LABELOP;
 	mcode.genS(s);
 	mcodlis.push(mcode);

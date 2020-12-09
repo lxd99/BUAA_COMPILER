@@ -742,6 +742,8 @@ void assignSen(symbol * scope) {
 		if (wd.type != RBRACK) error(wd,s,SRBRACK);
 		wd = next();
 		if (wd.type == ASSIGN) {
+			if(!ISTID(srcl))
+				addc(srcl, new Data(CONSADD, (void*)0), srcl);
 			srcl= new Data(VARADD, symb,srcl);
 			wd = next();
 		}
@@ -861,10 +863,8 @@ void situaSen(symbol * scope) {
 	if (wd.type != DEFAULTTK) error(wd,s,SDEFAULT);
 	else defaul(scope);
 	
-	if (srcl->type == MVARADD)
-		glabc(srcr->s, -1);
-	else
-		glabc(srcr->s);
+	if (ISTID(srcl)) dept -= 1;
+	glabc(srcr->s);
 	if (wd.type != RBRACE) error(wd,s);
 	wd = next();
 	addSen(s);
@@ -1003,10 +1003,12 @@ void factor(symbol * scope,int &type,Data *&des) {
 			wd = next();
 			EBRACK(scope, mtype,srcl);
 			if (wd.type == LBRACK) {
-				multc(srcl, new Data(CONSADD, (void*)symb->dim[1], (void*)0), srcl);
+				multc(srcl, new Data(CONSADD, (void*)symb->dim[1]), srcl);
 				EBRACK(scope, mtype, srcr);
 				addc(srcl, srcr, srcl);
 			}
+			else if(!ISTID(srcl))
+				addc(srcl, new Data(CONSADD,(void*) 0),srcl);
 			srcl = new Data(VARADD, symb, srcl);
 		}
 		else if (mwd.type == LPARENT) {
@@ -1091,7 +1093,7 @@ void subCase(symbol *scope,int type,Data *exp,Data *nex,int mid) {
 	wd = next();
 	con(n,mtype);
 	srcl = new Data(CONSADD, (void*)n);
-	casec(exp,srcl,nex);
+	casec(exp, srcl, nex);
 	if (mtype != type) error(wd, s,CONTYPE);
 	if (wd.type != COLON) error(wd,s);
 	wd = next();
@@ -1130,19 +1132,15 @@ void condition(symbol * scope,string ms) {
 	static string s = "<条件>";
 	Data* srcl,*srcr,*des;
 	int type1=-1,type2=-1,op = -1;
-	int move = 0;
 	expression(scope,type1,srcl);
-	if (srcl->type == MVARADD)
-		move -= 1;
+
 	if (!ISRELATEOP(wd.type)) error(wd,s);
 	op = wd.type;
 	wd = next();
 	expression(scope,type2,srcr);
-	if (srcr->type == MVARADD)
-		move -= 1;
 	des = new Data(LABADD, 0);
 	des->s = ms;
-	condjc(op,srcl,srcr,des,move);
+	condjc(op,srcl,srcr,des);
 	if (type1 != ITYPE||type2 !=ITYPE) error(wd,s,IFTYPE);
 	addSen(s);
 }
