@@ -36,7 +36,7 @@
 #define LABELOP 19
 #define ENDOP 20
 #define DECLAREOP 21
-
+#define CASEOP 22
 #define PRELAB  "dxlduckingss"
 #define MODKVAR(des,num)		\
 	{	(des)->type = MVARADD;\
@@ -118,6 +118,7 @@ struct Mcode {
 	Data *des,*srcl,*srcr;
 	int op;
 	string s;
+	int move =0;
 	Mcode() { op = INIT; }
 	Mcode(int mop,Data* mdes, Data* msrcl) {
 		op = mop;
@@ -167,8 +168,9 @@ void arrc(Data* srcl, Data* &des);
 void assignc(Data* srcl,Data*& des);
 void printc(Data* srcl);
 void readc(Data* des);
-void glabc(string s);
-void condjc(int op,Data* srcl, Data* srcr,Data* des);
+void glabc(string s,int move=0);
+void condjc(int op,Data* srcl, Data* srcr,Data* des,int move=0);
+void casec( Data* srcl, Data* srcr, Data* des);
 void pushc(Data* des,Data *srcl);
 void inic(Data* srcl);
 void callc(symbol* symb, Data* &des);

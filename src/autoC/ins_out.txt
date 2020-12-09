@@ -20,4 +20,5 @@
 #define LABELOP 19
 #define ENDOP 20
 #define DECLAREOP 21
-string opi[22]={"neg","add","sub","mul","div","jr","sw","sw","bge","bne","beq","ble","bgt","blt","j","xxx","xxx","xx","jal","xx","xx","xx"};
+#define CASEOP 22
+string opi[23]={"neg","add","sub","mul","div","jr","sw","sw","bge","bne","beq","ble","bgt","blt","j","xxx","xxx","xx","jal","xx","xx","xx","bne"};

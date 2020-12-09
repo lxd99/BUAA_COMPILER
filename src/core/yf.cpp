@@ -510,7 +510,7 @@ void senList(symbol * scope) {
 }
 void sentence(symbol * scope) {
 	/*
-	 ＜循环语句＞｜＜条件语句＞| ＜有返回值函数调用语句＞;  |＜无返回值函数调用语句＞;｜＜赋值语句＞;｜＜读语句＞;｜＜写语句＞;｜＜情况语句＞｜＜空＞;|＜返回语句＞; | '{'＜语句列＞'}'
+	 ＜循环语句＞｜＜条件语句＞| ＜有返回值函数调用语句＞;  |＜无返回值函数调用语句＞;｜＜赋值语句＞;｜＜读语句＞;｜＜写语句＞;｜＜0况语句＞｜＜空＞;|＜返回语句＞; | '{'＜语句列＞'}'
 	 FOLLOW: } while for if IDENFER scanf printf switch return ;
 	 FIRST: while for if IDENFER scanf printf switch return ; {
 	*/
@@ -860,8 +860,11 @@ void situaSen(symbol * scope) {
 
 	if (wd.type != DEFAULTTK) error(wd,s,SDEFAULT);
 	else defaul(scope);
-
-	glabc(srcr->s);
+	
+	if (srcl->type == MVARADD)
+		glabc(srcr->s, -1);
+	else
+		glabc(srcr->s);
 	if (wd.type != RBRACE) error(wd,s);
 	wd = next();
 	addSen(s);
@@ -1088,7 +1091,7 @@ void subCase(symbol *scope,int type,Data *exp,Data *nex,int mid) {
 	wd = next();
 	con(n,mtype);
 	srcl = new Data(CONSADD, (void*)n);
-	condjc(EQL,srcl,exp,nex);
+	casec(exp,srcl,nex);
 	if (mtype != type) error(wd, s,CONTYPE);
 	if (wd.type != COLON) error(wd,s);
 	wd = next();
@@ -1127,15 +1130,19 @@ void condition(symbol * scope,string ms) {
 	static string s = "<条件>";
 	Data* srcl,*srcr,*des;
 	int type1=-1,type2=-1,op = -1;
+	int move = 0;
 	expression(scope,type1,srcl);
+	if (srcl->type == MVARADD)
+		move -= 1;
 	if (!ISRELATEOP(wd.type)) error(wd,s);
 	op = wd.type;
 	wd = next();
 	expression(scope,type2,srcr);
-
+	if (srcr->type == MVARADD)
+		move -= 1;
 	des = new Data(LABADD, 0);
 	des->s = ms;
-	condjc(op,srcl,srcr,des);
+	condjc(op,srcl,srcr,des,move);
 	if (type1 != ITYPE||type2 !=ITYPE) error(wd,s,IFTYPE);
 	addSen(s);
 }

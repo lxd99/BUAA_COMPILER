@@ -9,6 +9,7 @@
 	else if((srcl)->type==MVARADD && (srcr)->type==MVARADD)\
 		move = -1;\
 	else move = 0;\
+	mcode.move = 0;\
 }while(0)
 int tid = 0;
 int dept = 0;
@@ -104,6 +105,12 @@ void readc(Data *des) {
 void printc(Data* srcl) {
 	static string op = "print ";
 	Mcode mcode = Mcode(PRINTOP, 0, srcl);
+
+	if (srcl->type == MVARADD) {
+		mcode.move = -1;
+		dept -= 1;
+	}
+		
 	mcode.genS(op + srcl->getS());
 	mcodlis.push(mcode);
 	
@@ -111,6 +118,10 @@ void printc(Data* srcl) {
 void assignc(Data* srcl, Data*& des) {
 	static string op = "=";
 	Mcode mcode = Mcode(ASSIGNOP,des,srcl);
+	if (srcl->type == MVARADD) {
+		mcode.move = -1;
+		dept -= 1;
+	}
 	mcode.genS(des->getS() + op + srcl->getS());
 	mcodlis.push(mcode);
 	
@@ -124,9 +135,11 @@ void inic(Data* srcl) {
 }
 void pushc(Data* des, Data* srcl) {
 	static string op = "push ";
-	if (des->type == MVARADD) 
-		dept -= dept > 0 ? 1 : 0;
 	Mcode mcode = Mcode(PUSHOP,des,srcl);
+	if (des->type == MVARADD) {
+		dept -= 1;
+		mcode.move = -1;
+	}
 	mcode.genS(op + srcl->getS()); // s形式只输出一部分
 	mcodlis.push(mcode);
 	
@@ -152,7 +165,12 @@ void callc(symbol* symb,Data *&des) {
 		
 	mcodlis.push(mcode);
 }
-void condjc(int op, Data* srcl, Data* srcr, Data* des) {
+void casec(Data* srcl, Data* srcr, Data *des) {
+	Mcode mcode = Mcode(CASEOP,des,srcl,srcr);
+	mcode.genS(srcl->getS() + " != " + srcr->getS() + " goto " + des->getS());
+	mcodlis.push(mcode);
+}
+void condjc(int op, Data* srcl, Data* srcr, Data* des,int move) {
 	Mcode mcode;
 	string sop;
 	switch (op)
@@ -184,6 +202,7 @@ void condjc(int op, Data* srcl, Data* srcr, Data* des) {
 		mcode = Mcode(JLTOP, des, srcl, srcr);
 		break;
 	}
+	mcode.move = move;
 	mcode.genS(srcl->getS()+" "+sop+" "+srcr->getS() + " goto "+des->getS());
 	mcodlis.push(mcode);
 }
@@ -207,8 +226,9 @@ void retc(Data* srcl,Data *srcr) {
 	else mcode.genS("ret null");
 	mcodlis.push(mcode);
 }
-void glabc(string s) {
+void glabc(string s,int move) {
 	Mcode mcode;
+	mcode.move = move;
 	mcode.op = LABELOP;
 	mcode.genS(s);
 	mcodlis.push(mcode);

@@ -1,3 +1,4 @@
+store error
 .data
 a: .word 15
 x: .word 5
@@ -14,12 +15,8 @@ move $fp $sp
 li $v0 0
 sw $v0 0($fp)
 lw $v0 0($fp)
-neg $v0 $v0
-addiu $sp $sp -4
-sw $v0 ($sp)
-lw $t7 0($sp)
-sw $t7 0($fp)
-addiu $sp $sp 4
+neg $tmcode.des->cont.varid $v0
+sw t_0 0($fp)
 lw $a0 0($fp)
 li $v0 1
 syscall
