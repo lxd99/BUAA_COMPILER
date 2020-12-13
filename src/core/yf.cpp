@@ -742,8 +742,6 @@ void assignSen(symbol * scope) {
 		if (wd.type != RBRACK) error(wd,s,SRBRACK);
 		wd = next();
 		if (wd.type == ASSIGN) {
-			if(!ISTID(srcl))
-				addc(srcl, new Data(CONSADD, (void*)0), srcl);
 			srcl= new Data(VARADD, symb,srcl);
 			wd = next();
 		}
@@ -1007,9 +1005,7 @@ void factor(symbol * scope,int &type,Data *&des) {
 				EBRACK(scope, mtype, srcr);
 				addc(srcl, srcr, srcl);
 			}
-			else if(!ISTID(srcl))
-				addc(srcl, new Data(CONSADD,(void*) 0),srcl);
-			srcl = new Data(VARADD, symb, srcl);
+			loadc(new Data(VARADD, symb, srcl),srcl,srcl);
 		}
 		else if (mwd.type == LPARENT) {
 			symb =symtab.find(wd.ss,scope);

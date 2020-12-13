@@ -36,7 +36,7 @@ string opi[23] = { "neg","addu","subu","mul","div","jr","sw","sw","bge","bne","b
 void error(Mcode mcode) {
 	printf("\nerror at:%s\n", mcode.s.c_str());
 }
-Mcode nextC() {
+Mcode fnextC() {
 	static int len = mcodlis.getSize() - 1;
 	if (pos < len)
 		return mcodlis.get(pos++);
@@ -441,7 +441,7 @@ void parseCode(insLis* insl, Mcode mcode) {
 		parseCase(insl, mcode);
 	else error(mcode);
 }
-void gDeclare() { //生产固定区域
+void gDeclare(Mcode (*nextC)()) { //生产固定区域
 	/*
 	inic() 
 	*/
@@ -489,7 +489,7 @@ void gDeclare() { //生产固定区域
 	gdeci.push(s);
 
 }
-void gMain() {
+void gMain(Mcode (*nextC)()) {
 	maini.push(".text");
 	maini.push(string("la $ra ")+ENDLAB);
 	Mcode mcode;
@@ -500,7 +500,7 @@ void gMain() {
 		if (mcode.op == ENDOP) break;
 	}
 }
-void gFun() {
+void gFun(Mcode (*nextC)()) {
 	funi.push("li $v0 10");
 	funi.push("syscall");
 	string s;
@@ -515,7 +515,8 @@ void gFun() {
 	}
 }
 void genFCode() {
-	gDeclare();
-	gFun();
-	gMain();
+	Mcode(*p)() = fnextC;
+	gDeclare(p);
+	gFun(p);
+	gMain(p);
 }

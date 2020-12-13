@@ -28,6 +28,7 @@
     <ClCompile Include="src\core\gram.h" />
     <ClCompile Include="src\core\main.cpp" />
     <ClCompile Include="src\core\mcode.cpp" />
+    <ClCompile Include="src\core\optimize.cpp" />
     <ClCompile Include="src\core\yf.cpp" />
     <ClCompile Include="src\test.cpp" />
     <Text Include="error.txt" />
@@ -64,6 +65,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="src\core\fcode.h" />
     <ClInclude Include="src\core\mcode.h" />
+    <ClInclude Include="src\core\optimize.h" />
     <ClInclude Include="src\core\symb.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

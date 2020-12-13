@@ -51,6 +51,9 @@
     <ClCompile Include="src\core\gram.h">
       <Filter>头文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\core\optimize.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -63,6 +66,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\core\fcode.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\optimize.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

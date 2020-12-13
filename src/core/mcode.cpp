@@ -137,6 +137,13 @@ void pushc(Data* des, Data* srcl) {
 	mcodlis.push(mcode);
 	
 }
+void loadc( Data *srcl,Data* &des) {
+	static string op = "load";
+	Mcode mcode = Mcode(LOADOP, des, srcl);
+	des = new Data(MVARADD, (void*)dept++);
+	mcode.genS(op + " " + des->getS() + " from " + srcl->getS());
+	mcodlis.push(mcode);
+}
 void callc(symbol* symb,Data *&des) {
 	/*
 	des:生成变量

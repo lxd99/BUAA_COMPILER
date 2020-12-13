@@ -37,9 +37,12 @@
 #define ENDOP 20
 #define DECLAREOP 21
 #define CASEOP 22
+#define MOVEOP 23
+#define LOADOP 24
 #define PRELAB  "dxlduckingss"
 #define ISTID(x) ((x)->type==MVARADD||((x)->type==VARADD && (x)->cont.symb->form == ARRAYF \
 && (x)->off->type == MVARADD))
+#define ISGENC(x) ((x).op==NEGOP||(x).op==ADDOP||(x).op==SUBOP||(x).op==MULOP||(x).op==DIVOP||(x).op==READOP)
 #define MODKVAR(des,num)		\
 	{	(des)->type = MVARADD;\
 		(des)->cont.varid = dept + (num); \
@@ -69,6 +72,10 @@ struct isInf {
 		isc = 0;
 		ise = 1;
 	}
+};
+struct OpFeature {
+	int isEnd=0;
+	int isBegin=0;
 };
 struct Data
 {
@@ -115,10 +122,19 @@ struct Data
 		else s = "????";
 		return s;
 	}
+	bool operator < (const Data& x) {
+		if (type != x.type) 
+			return type < x.type;
+		return cont.abst < x.cont.abst;
+	}
+	bool operator == (const Data& x) {
+		return type == x.type && cont.abst == x.cont.abst;
+	}
 };
 struct Mcode {
 	Data *des,*srcl,*srcr;
 	int op;
+	OpFeature opf;
 	string s;
 	Mcode() { op = INIT; }
 	Mcode(int mop,Data* mdes, Data* msrcl) {
@@ -140,6 +156,16 @@ struct McodeList {
 	vector<Mcode> cList;
 	map<string, int> sma;
 	void push(Mcode data) {
+		int mlen = cList.size();
+		if (data.op == DECLAREOP ||
+			(mlen>0&&cList[mlen-1].opf.isEnd==1)) {
+			data.opf.isBegin = 1;
+		}
+		if (data.op == JEQOP || data.op == JGEOP || data.op == JGTOP ||
+			data.op == JLEOP || data.op == JLTOP || data.op == JOP ||
+			data.op == CASEOP) {
+			data.opf.isEnd = 1;
+		}
 		cList.push_back(data);
 		if (data.op == LABELOP) {
 			if (!sma.emplace(data.s, cList.size() - 1).second) {
@@ -175,9 +201,13 @@ void casec( Data* srcl, Data* srcr, Data* des);
 void pushc(Data* des,Data *srcl);
 void inic(Data* srcl);
 void callc(symbol* symb, Data* &des);
+void loadc(Data *srcl,Data *srcr, Data*& des);
 void jumpc(Data *des);
 void declarec(Data *srcl);
 void endc();
 void retc(Data *srcl,Data *srcr);
 void outC();
+void gDeclare(Mcode(*nextC)());
+void gMain(Mcode(*nextC)());
+void gFun(Mcode(*nextC)());
 #endif
