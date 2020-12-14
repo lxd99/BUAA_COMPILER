@@ -78,6 +78,7 @@ struct symbol{
 	int form;
 	int retcnt;
 	int pos;
+	int mVar=-1;
 	bool isIni;
 	//int layer;
 	vector<int> dim;

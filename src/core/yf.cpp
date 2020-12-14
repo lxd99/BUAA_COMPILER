@@ -742,6 +742,7 @@ void assignSen(symbol * scope) {
 		if (wd.type != RBRACK) error(wd,s,SRBRACK);
 		wd = next();
 		if (wd.type == ASSIGN) {
+			slc(SLLOP, srcl, new Data(CONSADD, (void*)2), srcl);
 			srcl= new Data(VARADD, symb,srcl);
 			wd = next();
 		}
@@ -750,6 +751,7 @@ void assignSen(symbol * scope) {
 			multc(srcl, new Data(CONSADD, (void*)symb->dim[1]), srcl);
 			expression(scope,type,exp);
 			addc(srcl, exp, srcl);
+			slc(SLLOP, srcl, new Data(CONSADD, (void*)2), srcl);
 			srcl= new Data(VARADD, symb, srcl);
 			if (wd.type != RBRACK) error(wd,s,SRBRACK);
 			wd = next();
@@ -1005,6 +1007,7 @@ void factor(symbol * scope,int &type,Data *&des) {
 				EBRACK(scope, mtype, srcr);
 				addc(srcl, srcr, srcl);
 			}
+			slc(SLLOP, srcl, new Data(CONSADD, (void*)2), srcl);
 			loadc(new Data(VARADD, symb, srcl),srcl,srcl);
 		}
 		else if (mwd.type == LPARENT) {

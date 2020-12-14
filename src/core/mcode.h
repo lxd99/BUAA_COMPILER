@@ -4,7 +4,6 @@
 #define DADDR 0x10000000
 #define TADDR 0x400000
 #define KADDR 0x80000000
-#define MDEBUG 0
 
 #define MVARADD 0
 #define VARADD 1
@@ -39,10 +38,13 @@
 #define CASEOP 22
 #define MOVEOP 23
 #define LOADOP 24
+#define SLLOP 25
+#define SRLOP 26
 #define PRELAB  "dxlduckingss"
-#define ISTID(x) ((x)->type==MVARADD||((x)->type==VARADD && (x)->cont.symb->form == ARRAYF \
-&& (x)->off->type == MVARADD))
-#define ISGENC(x) ((x).op==NEGOP||(x).op==ADDOP||(x).op==SUBOP||(x).op==MULOP||(x).op==DIVOP||(x).op==READOP)
+#define ISTID(x) ((x)->type==MVARADD||((x)->type==VARADD\
+&&(x)->cont.symb->form == ARRAYF&&(x)->off->type==MVARADD))
+#define ISGENC(x) ((x).op==NEGOP||(x).op==ADDOP||(x).op==SUBOP \
+	||(x).op==MULOP||(x).op==DIVOP||(x).op==READOP||(x).op==LOADOP||(x).op==SLLOP||(x).op==SRLOP)
 #define MODKVAR(des,num)		\
 	{	(des)->type = MVARADD;\
 		(des)->cont.varid = dept + (num); \
@@ -111,7 +113,7 @@ struct Data
 				if (off == 0) s += "[]";
 				else s += "[" + off->getS() + "]";
 			}
-			else if (symb->form == FUNF) ;
+			else if (symb->form == FUNF);
 		}
 		else if (type == STRADD) {
 			s = PRELAB;
@@ -122,17 +124,18 @@ struct Data
 		else s = "????";
 		return s;
 	}
-	bool operator < (const Data& x) {
-		if (type != x.type) 
-			return type < x.type;
-		return cont.abst < x.cont.abst;
+	bool operator < ( const Data& x) const{
+		if (this->type != x.type) 
+			return this->type < x.type;
+		return cont.cons < x.cont.cons;
 	}
-	bool operator == (const Data& x) {
-		return type == x.type && cont.abst == x.cont.abst;
+	bool operator == (const Data& x) const{
+		return this->type == x.type 
+			&& this->cont.cons == x.cont.cons;
 	}
 };
 struct Mcode {
-	Data *des,*srcl,*srcr;
+	Data *des=0,*srcl=0,*srcr=0;
 	int op;
 	OpFeature opf;
 	string s;
@@ -184,6 +187,18 @@ struct McodeList {
 		for (auto i : cList)
 			printf("%s\n", i.s.c_str());
 	}
+	void genMax() {
+		symbol* symb=0;
+		for (auto i : cList) {
+			if (i.op == DECLAREOP) {
+				symb = i.srcl->cont.symb;
+			}
+			else if (i.des && i.des->type == MVARADD&&symb) {
+				symb->mVar = max(symb->mVar,
+					i.des->cont.varid);
+			}
+		}
+	}
 
 };
 void negc(Data* srcl,Data* &des);
@@ -203,6 +218,7 @@ void inic(Data* srcl);
 void callc(symbol* symb, Data* &des);
 void loadc(Data *srcl,Data *srcr, Data*& des);
 void jumpc(Data *des);
+void slc(int op,Data* srcl, Data* srcr, Data*& des);
 void declarec(Data *srcl);
 void endc();
 void retc(Data *srcl,Data *srcr);

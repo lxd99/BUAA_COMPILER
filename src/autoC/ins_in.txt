@@ -21,3 +21,7 @@ LABELOP xx
 ENDOP xx
 DECLAREOP xx
 CASEOP bne
+MOVEOP move
+LOADOP xxx
+SLLOP sll
+SRLOP srl

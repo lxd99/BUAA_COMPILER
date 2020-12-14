@@ -13,7 +13,10 @@ using  namespace std;
 	}while(0);
 void duck(int a,int b){}
 int _main() {
-	int a = INIT;
-	printf("%d\n", a);
+	string a[2] = { "sdf","sdfsd" };
+	string b[2];
+	a[0] = "dsdsf";
+	b[1] = a[0];
+	printf("%s", b[1].c_str());
 	return 0;
 }

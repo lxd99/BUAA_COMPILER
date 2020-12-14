@@ -1,6 +1,5 @@
 ﻿#ifndef  FCODE
 #define FCODE
-#define FDEBUG 0
 void outI();
 void genFCode();
 struct insLis {

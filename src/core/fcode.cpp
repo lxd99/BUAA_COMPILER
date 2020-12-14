@@ -8,14 +8,10 @@ insLis gdeci,maini,funi;
 extern map<string, int> strtab;
 static char sbuf[150];
 static int pos = 0;
-static int waste= 0;
-static int tid=0;
 symbol* nowsymb;
 static string dline = "_";
-string opi[23] = { "neg","addu","subu","mul","div","jr","sw","sw","bge","bne","beq",
-"ble","bgt","blt","j","xxx","xxx","xx","jal","xx","xx","xx","bne" };
-
-
+string opi[27] = { "neg","addu","subu","mul","div","jr","sw","sw","bge","bne","beq","ble",
+"bgt","blt","j","xxx","xxx","xx","jal","xx","xx","xx","bne","move","xxx","sll","srl" };
 #define ISARR(x) ((x)->type==VARADD&&(x)->cont.symb->form == ARRAYF)
 #define CHECKN(mcode) ((mcode).srcr->type==MVARADD||\
 			(ISARR((mcode).srcr)&& (mcode).srcr->off->type == MVARADD ))
@@ -27,12 +23,14 @@ string opi[23] = { "neg","addu","subu","mul","div","jr","sw","sw","bge","bne","b
 	insl->push("syscall");\
 }while(0)
 #define LIM 6
+#define MNUM 400
 #define GENBUF(s,x) do{\
 	s = PRELAB;\
 	s += "_buf";\
 	if(x==1) s+=":";\
 }while(0)
 #define GENFLAB(x) (PRELAB+dline+(x))
+string reg[2];
 void error(Mcode mcode) {
 	printf("\nerror at:%s\n", mcode.s.c_str());
 }
@@ -42,14 +40,14 @@ Mcode fnextC() {
 		return mcodlis.get(pos++);
 	else return mcodlis.get(pos);
 }
-static Mcode back() {
-	if (pos > 0) return mcodlis.get(--pos);
-	else return mcodlis.get(pos);
-}
 void outI() {
 	gdeci.outI();
 	maini.outI();
 	funi.outI();
+}
+void getiop(int op,string &s) {
+	if (op == ADDOP) s = "addiu";
+	if (op == SUBOP) s = "subiu";
 }
 void enterFun(insLis * insl ,int size) {
 	/*进入函数中间函数*/
@@ -61,66 +59,58 @@ void enterFun(insLis * insl ,int size) {
 	SAPP(0, s, "sw $fp %d($sp)", size );
 	insl->push(s);
 	insl->push("move $fp $sp");
-	for (int i = 0; i <= tid; i++) {
-		SAPP(0,s,"$sw $t%d -%d($sp)", tid,4*(tid+1));
-		insl->push(s);
-	}
-	SAPP(0, s, "addi $sp $sp -%d", 4 * (tid + 1));
-	insl->push(s);
 }
-void LoadReg(insLis* insl,Data data,string des,string &reg,int pattern=0,int keep=0) { 
+void LoadReg(insLis* insl,Data data,int pos,int pattern=0) { 
 	/*读取地址所在地的数值到reg*/
 	string s;
-	reg = des;
+	static string ini[2] = {"$t8","$t9"};
+	if (pattern == 0) reg[pos] = ini[pos];
 	if (data.type == CONSADD) {
-		SAPP(0, s, "li %s %d", reg.c_str(), data.cont.cons);
+		SAPP(0, s, "li %s %d", reg[pos].c_str(), data.cont.cons);
 		insl->push(s);
 	}
 	else if (data.type == MVARADD) {
+		//特判load
 		if (data.cont.varid <= LIM) {
-			if (pattern == 0) //0型pattern
-				SAPP(0, reg, "$t%d", data.cont.varid);
+			if (pattern == 0) 
+				reg[pos] = "$t" + to_string(data.cont.varid);
 			else {
-				SAPP(0, s, "move %s $t%d", reg.c_str(),data.cont.varid);
+				SAPP(0, s, "move %s $t%d", reg[pos].c_str(),data.cont.varid);
 				insl->push(s);
 			}
 				
 		}
-		else {
-			SAPP(0, s, "lw %s ($sp)", reg.c_str());
-			insl->push(s);
-			if(!keep)
-				insl->push("addiu $sp $sp 4");
-		}
-
+		else 
+			SAPP(0, s, "lw %s %d($gp)", reg[pos].c_str(),data.cont.varid*4);	
 	}
 	else if (data.type == VARADD) {
 		symbol* symb = data.cont.symb;
 		if (symb->form == VARF) {
 			if (symb->scope == 0) 
-				SAPP(0, s, "lw %s %s", reg.c_str(), symb->wd.s.c_str());
+				SAPP(0, s, "lw %s %s", reg[pos].c_str(), symb->wd.s.c_str());
 			else 
-				SAPP(0, s, "lw %s %d($fp)", reg.c_str(),symb->pos);
+				SAPP(0, s, "lw %s %d($fp)", reg[pos].c_str(),symb->pos);
 			insl->push(s);
 		}
 		else if (symb->form == CONSF) {
-			SAPP(0,s,"li %s %d", reg.c_str(), symb->value.var);
+			SAPP(0,s,"li %s %d", reg[pos].c_str(), symb->value.var);
 			insl->push(s);
 		}
 		else if (symb->form == ARRAYF) { //数组
-			LoadReg(insl, *data.off, reg,des,1,keep);
-			insl->push("sll "+reg+ " "+ reg +" 2");
-			if (symb->scope == 0)
-				SAPP(0, s, "lw %s %s(%s)", reg.c_str(), symb->wd.s.c_str(), reg.c_str());
-			else {
-				SAPP(0,s,"addiu %s %s %d", reg.c_str(), reg.c_str(), symb->pos);
-				insl->push(s);
-				SAPP(0, s, "addu %s %s $fp", reg.c_str(), reg.c_str());
-				insl->push(s);
-				SAPP(0, s, "lw %s (%s)",reg.c_str(),reg.c_str(),reg.c_str());
-			}
-				
-			insl->push(s);
+			insl->push("error: an array not load");
+			//LoadReg(insl, *data.off, reg, des, 1, keep);
+			//insl->push("sll " + reg + " " + reg + " 2");
+			//if (symb->scope == 0)
+			//	SAPP(0, s, "lw %s %s(%s)", reg.c_str(), symb->wd.s.c_str(), reg.c_str());
+			//else {
+			//	SAPP(0, s, "addiu %s %s %d", reg.c_str(), reg.c_str(), symb->pos);
+			//	insl->push(s);
+			//	SAPP(0, s, "addu %s %s $fp", reg.c_str(), reg.c_str());
+			//	insl->push(s);
+			//	SAPP(0, s, "lw %s (%s)", reg.c_str(), reg.c_str(), reg.c_str());
+			//}
+
+			//insl->push(s);
 		}
 	}
 	else {
@@ -129,30 +119,36 @@ void LoadReg(insLis* insl,Data data,string des,string &reg,int pattern=0,int kee
 		
 	
 }
-void store(insLis * insl,string data) {
+void store(insLis * insl,string reg,Data *des) {
 	/*入栈中间函数&&消栈*/
-	string s;
-	if (data[1] == 't');
-	else if(data=="$v0"){
-		insl->push("addi $sp $sp -4");
-		insl->push("sw " + data + " 0($sp)");
+	string s;	
+	int id = reg[2] - '0';
+	SAPP(0, s, "sw %s %d($gp)",reg.c_str(), id * 4);
+	if (reg[1] == 't') {
+		if (id > LIM)
+			insl->push(s);
 	}
-	else 
+	else
 		printf("store error\n");
 }
 void parseExp(insLis* insl,Mcode mcode) {
 	/*f
-	multc() addc() subc() divc()
+	multc() addc() subc() divc() sllc() srlc()
 	*/
 	int back = 0;
-	string reg1, reg2,rdes;
-	LoadReg(insl,*mcode.srcr,"$t7",reg2);
-	LoadReg(insl, *mcode.srcl,"$v0",reg1);
+	string rdes,sop=opi[mcode.op];
+	LoadReg(insl, *mcode.srcl, 0);
+	if (mcode.srcr->type==CONSADD) {
+		reg[1] = to_string(mcode.srcr->cont.varid);
+		getiop(mcode.op,sop);
+	}
+	else 
+	LoadReg(insl,*mcode.srcr,1);
 	SAPP(0, rdes, "$t%d", mcode.des->cont.varid);
 	if(mcode.des->cont.varid>LIM)
-		rdes = "$v0";
-	insl->push(opi[mcode.op] + " "+rdes +" "+reg1 +" "+reg2);
-	store(insl,rdes);
+		rdes = "$t8";
+	insl->push(sop + " "+rdes +" "+reg[0] +" "+reg[1]);
+	store(insl,rdes,mcode.des);
 }
 void parseDeclare(insLis * insl,Mcode mcode) {
 	/*
@@ -167,42 +163,48 @@ void parseDeclare(insLis * insl,Mcode mcode) {
 	insl->push(s);
 	SAPP(0, s, "sw $fp %d($sp)", size);
 	insl->push(s);
-
 	insl->push("move $fp $sp");
-	for (int i = 0; i <= LIM; i++) {
-		SAPP(0, s, "sw $t%d -%d($sp)", i, 4 * (i + 1));
-		insl->push(s);
+
+	nowsymb = mcode.srcl->cont.symb;
+	for (int i = 0; i <= nowsymb->mVar; i++) {
+		if (i <= LIM) {
+			SAPP(0, s, "sw $t%d -%d($sp)", i, 4 * (i+1));
+			insl->push(s);
+		}
+		else {
+			SAPP(0, s, "lw $t8 %d($gp)", i, 4 * i);
+			insl->push(s);
+			SAPP(0, s, "sw $t8 -%d($sp)", i, 4 * (i+1));
+			insl->push(s);
+		}
 	}
-	SAPP(0, s, "addiu $sp $sp -%d", 4 * (LIM + 1));
-	insl->push(s);
-	tid = 0;
+	if (nowsymb->mVar >= 0)
+		insl->push("addiu $sp $sp -" + to_string(4*(1+nowsymb->mVar)));
 }
 void parseAss(insLis* insl,Mcode mcode) {
 	/*
 	assignc()
 	*/
-	string s,reg1,reg2,rdes;
-	LoadReg(insl,*mcode.srcl,"$t7",reg1);
+	string s,rdes;
+	LoadReg(insl,*mcode.srcl,0);
 	Data* des = mcode.des;
 	symbol* symb = des->cont.symb;
 	if (symb->form == ARRAYF) {
-		LoadReg(insl, *des->off, "$v0",reg2);
-		insl->push("sll " + reg2+" "+reg2 +" 2");
-
+		LoadReg(insl, *des->off, 1);
 		if(symb->scope==0)
-			SAPP(0, s, "sw %s %s(%s)", reg1.c_str(),symb->wd.s.c_str(),reg2.c_str());
+			SAPP(0, s, "sw %s %s(%s)", reg[0].c_str(),symb->wd.s.c_str(),reg[1].c_str());
 		else {
-			s =  "addu "+ reg2+ " "+reg2 +" $fp";
+			s =  "addu "+ reg[1]+ " "+reg[1] +" $fp";
 			insl->push(s);
-			SAPP(0, s, "sw %s %d(%s)", reg1.c_str(),symb->pos,reg2.c_str());
+			SAPP(0, s, "sw %s %d(%s)", reg[0].c_str(),symb->pos,reg[1].c_str());
 		}
 		insl->push(s);
 	}
 	else {
 		if (symb->scope == 0)
-			SAPP(0, s, "sw %s %s", reg1.c_str(),symb->wd.s.c_str());
+			SAPP(0, s, "sw %s %s", reg[0].c_str(),symb->wd.s.c_str());
 		else
-			SAPP(0, s, "sw %s %d($fp)", reg1.c_str(),symb->pos);
+			SAPP(0, s, "sw %s %d($fp)", reg[0].c_str(),symb->pos);
 		insl->push(s);
 	}
 }
@@ -248,11 +250,13 @@ void parsePrint(insLis* insl, Mcode mcode) {
 		insl->push("li $v0 4");
 	}
 	else if(mcode.srcl->isinf.isc==0){
-		LoadReg(insl, *mcode.srcl, "$a0", reg1,1);
+		reg[0] = "$a0";
+		LoadReg(insl, *mcode.srcl,0,1);
 		insl->push("li $v0 1");
 	}
 	else if(mcode.srcl->isinf.isc){
-		LoadReg(insl, *mcode.srcl, "$a0", reg1,1);
+		reg[0] = "$a0";
+		LoadReg(insl, *mcode.srcl,0,1);
 		insl->push("li $v0 11");
 	}
 	else printf("errorPrint");
@@ -290,22 +294,21 @@ void parseNeg(insLis* insl, Mcode mcode) {
 	negc()
 	*/
 	int back = 0;
-	string reg,rdes;
+	string rdes;
 	SAPP(0, rdes, "$t%d", mcode.des->cont.varid);
 	if (mcode.des->cont.varid > LIM)
 		rdes = "$v0";
-	LoadReg(insl, *mcode.srcl, "$v0",reg);
-	insl->push("neg " + rdes +" "+reg);
-	store(insl,rdes);
+	LoadReg(insl, *mcode.srcl, 0);
+	insl->push("neg " + rdes +" "+reg[0]);
+	store(insl,rdes,mcode.des);
 }
 void parseCase(insLis* insl, Mcode mcode) {
 	/*
 	casec()
 	*/
-	string reg1, reg2, rdes;
-	LoadReg(insl, *mcode.srcr, "$v0", reg2, 0, 1);
-	LoadReg(insl, *mcode.srcl, "$t7", reg1);
-	insl->push("bne " + reg1 + " " + reg2 + " " + mcode.des->s);
+	LoadReg(insl, *mcode.srcl, 0);
+	LoadReg(insl, *mcode.srcr, 1);
+	insl->push("bne " + reg[0] + " " + reg[1] + " " + mcode.des->s);
 	if (mcode.srcl->type == MVARADD && mcode.srcl->cont.varid > LIM)
 		insl->push("addiu $sp $sp 4");
 
@@ -315,13 +318,13 @@ void parseJump(insLis* insl,Mcode mcode) {
 	condjc() jumpc()
 	*/
 	int back = 0;
-	string ms,reg1,reg2;
+	string ms;
 	if (mcode.op == JOP) 
 		insl->push(opi[JOP] + " " + mcode.des->s);
 	else {
-		LoadReg(insl, *mcode.srcr, "$v0",reg2);
-		LoadReg(insl, *mcode.srcl, "$t7",reg1);
-		insl->push(opi[mcode.op]+" "+reg1 +" "+reg2 + " "+ mcode.des->s);
+		LoadReg(insl, *mcode.srcl, 0);
+		LoadReg(insl, *mcode.srcr, 1);
+		insl->push(opi[mcode.op]+" "+reg[0] +" "+reg[1] + " "+ mcode.des->s);
 	}
 }
 void parseCall(insLis* insl ,Mcode mcode) {
@@ -346,20 +349,12 @@ void parsePush(insLis* insl,Mcode mcode) {
 	/*
 	pushc()
 	*/
-	string ms,reg1;
-	if (mcode.srcl->type != MVARADD) {
-		LoadReg(insl, *mcode.srcl, "$v0", reg1,1);
-		SAPP(0, ms, "addiu $sp $sp %d", -4);
-		insl->push(ms);
-		insl->push("sw $v0 ($sp)");
-	}
-	else {
-		insl->push("addiu $sp $sp -4");
-		if (mcode.srcl->cont.varid <= LIM) {
-			SAPP(0, ms, "sw $t%d ($sp)", mcode.srcl->cont.varid);
-			insl->push(ms);
-		}
-	}
+	string ms;
+	LoadReg(insl, *mcode.srcl, 0);
+	SAPP(0, ms, "addiu $sp $sp %d", -4);
+	insl->push(ms);
+	SAPP(0, ms, "sw %s ($sp)", reg[0].c_str());
+	insl->push(ms);
 }
 void parseRet(insLis* insl, Mcode mcode) {
 	/*
@@ -368,21 +363,61 @@ void parseRet(insLis* insl, Mcode mcode) {
 	int sizev = symtab.getVarSize(mcode.srcr->cont.symb);
 	int sizep = symtab.getParSize(mcode.srcr->cont.symb);
 	int back = 0;
-	string ms,reg;
-	if (mcode.srcl) 
-		LoadReg(insl, *mcode.srcl, "$v0", reg,1);
-	
-	for (int i = 0; i <=LIM; i++) {
-		SAPP(0, ms, "lw $t%d -%d($fp)", i, (i + 1) * 4);
-		insl->push(ms);
-	}	
-	SAPP(0, ms, "lw $ra %d($fp)", sizev + 4);
-	insl->push(ms);
-	SAPP(0, ms, "addiu $sp $fp %d", sizev +sizep+ 8);
-	insl->push(ms);
-	SAPP(0, ms, "lw $fp %d($fp)",sizev);
-	insl->push(ms);
+	string s;
+	if (mcode.srcl) {
+		reg[0] = "$v0";
+		LoadReg(insl, *mcode.srcl, 0, 1);
+	}
+	SAPP(0, s, "lw $ra %d($fp)", sizev + 4);
+	insl->push(s);
+	SAPP(0, s, "addiu $sp $fp %d", sizev +sizep+ 8);
+	insl->push(s);
+	for (int i = 0; i <= nowsymb->mVar; i++) {
+		if (i <= LIM) {
+			SAPP(0, s, "lw $t%d -%d($fp)", i, 4 * (i + 1));
+			insl->push(s);
+		}
+		else {
+			SAPP(0, s, "lw $t8 -%d($fp)", i, 4 * (i + 1));
+			insl->push(s);
+			SAPP(0, s, "sw $t8 %d($gp)", i, 4 * i);
+			insl->push(s);
+		}
+	}
+
+	SAPP(0, s, "lw $fp %d($fp)", sizev);
+	insl->push(s);
 	insl->push("jr $ra");
+}
+void parseLoad(insLis* insl, Mcode mcode) {
+	/*
+	loadc()
+	notice:  0对应于$t8,1对应于$t9
+	*/
+	int id = mcode.des->cont.varid;
+	symbol* symb = mcode.srcl->cont.symb;
+	string rdes,s;
+	LoadReg(insl, *mcode.srcr, 0);
+	if (id <= LIM) SAPP(0, rdes, "$t%d", id);
+	else  rdes = "$t9";
+	if (symb->scope == 0)
+		SAPP(0, s, "lw %s %s(%s)", rdes.c_str(), symb->wd.s.c_str(), reg[0].c_str());
+	else {
+		s = "addu " + reg[0] + " " + reg[0] + " $fp";
+		insl->push(s);
+		SAPP(0, s, "lw %s %d(%s)", rdes.c_str(), symb->pos, reg[0].c_str());
+	}
+	insl->push(s);
+	store(insl, rdes, mcode.des);
+}
+void parseMove(insLis* insl, Mcode mcode) {
+/*
+	movec()
+*/
+	LoadReg(insl, *mcode.des, 0);
+	LoadReg(insl, *mcode.srcl, 1);
+	insl->push("move " + reg[0] + " " + reg[1]);
+	store(insl, reg[0], mcode.des);
 }
 void parseLab(insLis* insl, Mcode mcode) {
 	/*
@@ -395,9 +430,13 @@ void parseEnd(insLis* insl, Mcode mcode) {
 }
 void parseCode(insLis* insl, Mcode mcode) {
 	/*解析*/
-	if (FDEBUG == 1)
-		printf("%s\n",mcode	.s.c_str());
-	if (mcode.op == ADDOP || mcode.op == SUBOP || mcode.op == MULOP || mcode.op == DIVOP) {
+	if (FDEBUG == 1) {
+		printf("%s\n", mcode.s.c_str());
+		fflush(stdout);
+	}
+		
+	if (mcode.op == ADDOP || mcode.op == SUBOP || mcode.op == MULOP || mcode.op == DIVOP||
+	mcode.op==SRLOP || mcode.op == SLLOP) {
 		parseExp(insl, mcode);
 	}
 	else if (mcode.op == NEGOP) {
@@ -439,6 +478,12 @@ void parseCode(insLis* insl, Mcode mcode) {
 		parsePush(insl, mcode);
 	else if (mcode.op == CASEOP)
 		parseCase(insl, mcode);
+	else if (mcode.op == MOVEOP) {
+		parseMove(insl, mcode);
+	}
+	else if (mcode.op == LOADOP) {
+		parseLoad(insl,mcode);
+	}
 	else error(mcode);
 }
 void gDeclare(Mcode (*nextC)()) { //生产固定区域
@@ -490,7 +535,11 @@ void gDeclare(Mcode (*nextC)()) { //生产固定区域
 
 }
 void gMain(Mcode (*nextC)()) {
+	string ms;
 	maini.push(".text");
+	SAPP(0, ms, "addiu $sp $sp -%d", MNUM);
+	maini.push(ms);
+	maini.push("move $gp $sp");
 	maini.push(string("la $ra ")+ENDLAB);
 	Mcode mcode;
 	while (true)
@@ -508,7 +557,6 @@ void gFun(Mcode (*nextC)()) {
 	while (true) {
 		mcode = nextC();
 		if (mcode.op == DECLAREOP && mcode.srcl->cont.symb->wd.ss=="main") {
-			back();
 			break;
 		}
 		parseCode(&funi, mcode);
@@ -518,5 +566,6 @@ void genFCode() {
 	Mcode(*p)() = fnextC;
 	gDeclare(p);
 	gFun(p);
+	pos--;
 	gMain(p);
 }

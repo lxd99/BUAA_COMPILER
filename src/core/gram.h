@@ -8,6 +8,7 @@
 #include<set>
 #include<iostream>
 #include <algorithm>
+#include "global.h"
 using namespace  std;
 #define CDEBUG 0
 #define YDEBUG 0

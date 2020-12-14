@@ -1,17 +1,18 @@
+#define  _CRT_SECURE_NO_WARNINGS
 #include "optimize.h"
 
 BlockTable blktab;
 extern struct McodeList mcodlis;
-static int id=0;
+static int oid=0;
 Mcode onextC() {
 	static int len = blktab.bma.size()-1;
 	int pos = 0;
-	if (id <= len) {
-		Block* blk = blktab.get(id);
+	if (oid <= len) {
+		Block* blk = blktab.get(oid);
 		return blk->get(pos++);
 		if (pos >= blk->size) {
 			pos = 0;
-			id++;
+			oid++;
 		}
 	}
 	else 

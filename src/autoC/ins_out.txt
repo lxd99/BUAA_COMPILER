@@ -21,4 +21,8 @@
 #define ENDOP 20
 #define DECLAREOP 21
 #define CASEOP 22
-string opi[23]={"neg","add","sub","mul","div","jr","sw","sw","bge","bne","beq","ble","bgt","blt","j","xxx","xxx","xx","jal","xx","xx","xx","bne"};
+#define MOVEOP 23
+#define LOADOP 24
+#define SLLOP 25
+#define SRLOP 26
+string opi[27]={"neg","add","sub","mul","div","jr","sw","sw","bge","bne","beq","ble","bgt","blt","j","xxx","xxx","xx","jal","xx","xx","xx","bne","move","xxx","sll","srl"};

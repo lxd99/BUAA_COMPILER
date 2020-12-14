@@ -10,6 +10,14 @@
 		move = -1;\
 	else move = 0;\
 }while(0)
+#define ISCONST(x) ((x)->type==CONSADD|| \
+	((x)->type==VARADD && (x)->cont.symb->form==CONSF))
+#define GETCONS(x,num) do{ \
+	if((x)->type == CONSADD) num = (x)->cont.cons; \
+	else { \
+		num = (x)->cont.symb->value.var;\
+	}\
+}while(0)
 int tid = 0;
 int dept = 0;
 McodeList	 mcodlis;
@@ -20,74 +28,122 @@ void outC() {
 void negc(Data *srcl,Data *&des) {
 	static string op = "-";
 	/*<负运算>*/
-	Data* mdes = new Data;
 	Mcode mcode;
+	des = new Data;
 	int move = 0;
-	if (!ISTID(srcl)) move = 1;
-	MODKVAR(mdes, move - 1);
-
-	mcode = Mcode(NEGOP, mdes, srcl);
-	mcode.genS(mdes->getS() + "=" + op + srcl->getS());
-	mcodlis.push(mcode);
-	des = mdes;
+	if (ISCONST(srcl) && OPT >= 1) {
+		int l;
+		GETCONS(srcl, l);
+		des = new Data(CONSADD, (void*)(-l));
+	}
+	else {
+		if (!ISTID(srcl)) move = 1;
+		MODKVAR(des, move - 1);
+		mcode = Mcode(NEGOP, des, srcl);
+		mcode.genS(des->getS() + "=" + op + srcl->getS());
+		mcodlis.push(mcode);
+	}
 	/*gRS("neg", des, src);*/
+}
+void slc(int op,Data* srcl, Data *srcr,Data*& des) {
+	/*
+	只支持左右移常数!
+	*/
+	string sop = op == SLLOP ? "sll" : "srl";
+	if (ISCONST(srcl) && ISCONST(srcr)) {
+		int l, r;
+		GETCONS(srcl, l);
+		GETCONS(srcr, r);
+		des = new Data(CONSADD, (void*)(l << r));
+	}
+	else {
+		des = new Data(MVARADD, ISTID(srcl) ?
+			(void*)(dept - 1) : (void*)(dept++));
+		Mcode mcode = Mcode(op, des, srcl, srcr);
+		mcode.genS(des->getS() + " = " +
+			srcl->getS() + " " + sop + " " + srcr->getS());
+		mcodlis.push(mcode);
+	}
 }
 void addc(Data* srcl, Data* srcr, Data* &des) {
 	static string op = "+";
 	int move = 0;
-	Data* mdes = new Data;
+	des = new Data;
 	Mcode mcode;
-	GETDMOVE;
-	MODKVAR(mdes, move - 1);
-
-	mcode = Mcode(ADDOP, mdes,srcl, srcr);
-	mcode.genS(mdes->getS() + "=" + srcl->getS() + op + srcr->getS());
-	mcodlis.push(mcode);
-	
-	des = mdes;
-	
+	if (ISCONST(srcl) && ISCONST(srcr)&&OPT>=1) {
+		int l, r;
+		GETCONS(srcl,l);
+		GETCONS(srcr,r);
+		des = new Data(CONSADD,(void*)(l+r));
+	}
+	else {
+		GETDMOVE;
+		MODKVAR(des, move - 1);
+		mcode = Mcode(ADDOP, des, srcl, srcr);
+		mcode.genS(des->getS() + "=" + srcl->getS() + op + srcr->getS());
+		mcodlis.push(mcode);
+	}
 	/*gRD("add", des, srcl, srcr);*/
 }
 void subc(Data* srcl, Data* srcr, Data* &des) {
 	static string op = "-";
 	int move = 0;
-	Data* mdes = new Data;
+	des = new Data;
 	Mcode mcode;
-	GETDMOVE;
-	MODKVAR(mdes, move - 1);
+	if (ISCONST(srcl) && ISCONST(srcr) && OPT >= 1) {
+		int l, r;
+		GETCONS(srcl, l);
+		GETCONS(srcr, r);
+		des = new Data(CONSADD, (void*)(l - r));
+	}
+	else {
+		GETDMOVE;
+		MODKVAR(des, move - 1);
+		mcode = Mcode(SUBOP, des, srcl, srcr);
+		mcode.genS(des->getS() + "=" + srcl->getS() + op + srcr->getS());
+		mcodlis.push(mcode);
+	}
 
-	mcode = Mcode(SUBOP, mdes,srcl, srcr);
-	mcode.genS(mdes->getS() + "=" + srcl->getS() + op + srcr->getS());
-	mcodlis.push(mcode);
-	des = mdes;
 	/*gRD("sbu", des, srcl, srcr);*/
 }
 void multc(Data* srcl, Data* srcr, Data*& des) {
 	static string op = "*";
 	int move = 0;
-	Data* mdes = new Data;
+	des = new Data;
 	Mcode mcode;
-	GETDMOVE;
-	MODKVAR(mdes, move - 1);
-
-	mcode = Mcode(MULOP, mdes,srcl, srcr);
-	mcode.genS(mdes->getS() + "=" + srcl->getS() + op + srcr->getS());
-	mcodlis.push(mcode);
-	des = mdes;
+	if (ISCONST(srcl) && ISCONST(srcr) && OPT >= 1) {
+		int l, r;
+		GETCONS(srcl, l);
+		GETCONS(srcr, r);
+		des = new Data(CONSADD, (void*)(l * r));
+	}
+	else {
+		GETDMOVE;
+		MODKVAR(des, move - 1);
+		mcode = Mcode(MULOP, des, srcl, srcr);
+		mcode.genS(des->getS() + "=" + srcl->getS() + op + srcr->getS());
+		mcodlis.push(mcode);
+	}
 	/*gRD("mulo", des, srcl, srcr);*/
 }
 void divc(Data* srcl, Data* srcr, Data* & des) {
 	static string op = "/";
 	int move = 0;
-	Data* mdes = new Data;
+	des = new Data;
 	Mcode mcode;
-	GETDMOVE;
-	MODKVAR(mdes, move - 1);
-
-	mcode = Mcode(DIVOP, mdes,srcl, srcr);
-	mcode.genS(mdes->getS() + "=" + srcl->getS() + op + srcr->getS());
-	mcodlis.push(mcode);
-	des = mdes;
+	if (ISCONST(srcl) && ISCONST(srcr) && OPT >= 1) {
+		int l, r;
+		GETCONS(srcl, l);
+		GETCONS(srcr, r);
+		des = new Data(CONSADD, (void*)(l / r));
+	}
+	else {
+		GETDMOVE;
+		MODKVAR(des, move - 1);
+		mcode = Mcode(DIVOP, des, srcl, srcr);
+		mcode.genS(des->getS() + "=" + srcl->getS() + op + srcr->getS());
+		mcodlis.push(mcode);
+	}
 	
 	/*gRD("div", des, srcl, srcr);*/
 }
@@ -137,10 +193,12 @@ void pushc(Data* des, Data* srcl) {
 	mcodlis.push(mcode);
 	
 }
-void loadc( Data *srcl,Data* &des) {
+void loadc(Data* srcl, Data* srcr, Data*& des) {
 	static string op = "load";
-	Mcode mcode = Mcode(LOADOP, des, srcl);
-	des = new Data(MVARADD, (void*)dept++);
+	des = new Data(MVARADD,
+		ISTID(srcr) ? (void*)(dept - 1) : (void*)(dept++));
+	Mcode mcode = Mcode(LOADOP, des, srcl,srcr);
+	//只需要srcl即可生成函数
 	mcode.genS(op + " " + des->getS() + " from " + srcl->getS());
 	mcodlis.push(mcode);
 }
@@ -234,6 +292,7 @@ void glabc(string s) {
 	mcode.genS(s);
 	mcodlis.push(mcode);
 }
+
 void endc() {
 	Mcode mcode;
 	mcode.op = ENDOP;
