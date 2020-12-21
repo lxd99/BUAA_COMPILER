@@ -41,10 +41,6 @@
 #define SLLOP 25
 #define SRLOP 26
 #define PRELAB  "dxlduckingss"
-#define ISTID(x) ((x)->type==MVARADD||((x)->type==VARADD\
-&&(x)->cont.symb->form == ARRAYF&&(x)->off->type==MVARADD))
-#define ISGENC(x) ((x).op==NEGOP||(x).op==ADDOP||(x).op==SUBOP \
-	||(x).op==MULOP||(x).op==DIVOP||(x).op==READOP||(x).op==LOADOP||(x).op==SLLOP||(x).op==SRLOP)
 #define MODKVAR(des,num)		\
 	{	(des)->type = MVARADD;\
 		(des)->cont.varid = dept + (num); \
@@ -96,7 +92,10 @@ struct Data
 		off = (Data*)moff;
 	}
 	string getS() {
-		if (s != "") return s;
+		if (s != "" && type==LABADD) {
+			return s;
+		}
+		s = "";
 		char sbuf[50];
 		if (type == MVARADD) {
 			sprintf(sbuf, "t%d", cont.varid);
@@ -160,13 +159,13 @@ struct McodeList {
 	map<string, int> sma;
 	void push(Mcode data) {
 		int mlen = cList.size();
-		if (data.op == DECLAREOP ||
+		if (data.op == DECLAREOP ||data.op==LABELOP||
 			(mlen>0&&cList[mlen-1].opf.isEnd==1)) {
 			data.opf.isBegin = 1;
 		}
 		if (data.op == JEQOP || data.op == JGEOP || data.op == JGTOP ||
 			data.op == JLEOP || data.op == JLTOP || data.op == JOP ||
-			data.op == CASEOP) {
+			data.op == CASEOP||data.op==JNEOP) {
 			data.opf.isEnd = 1;
 		}
 		cList.push_back(data);
@@ -206,7 +205,6 @@ void addc(Data* srcl, Data* srcr, Data* &des);
 void subc(Data* srcl, Data* srcr, Data* &des);
 void multc(Data* srcl, Data* srcr, Data* &des);
 void divc(Data* srcl, Data* srcr, Data* &des);
-void arrc(Data* srcl, Data* &des);
 void assignc(Data* srcl,Data*& des);
 void printc(Data* srcl);
 void readc(Data* des);
@@ -219,6 +217,7 @@ void callc(symbol* symb, Data* &des);
 void loadc(Data *srcl,Data *srcr, Data*& des);
 void jumpc(Data *des);
 void slc(int op,Data* srcl, Data* srcr, Data*& des);
+void newcondjc(Mcode code, string lab);
 void declarec(Data *srcl);
 void endc();
 void retc(Data *srcl,Data *srcr);

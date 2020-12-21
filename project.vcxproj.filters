@@ -33,9 +33,6 @@
     <ClCompile Include="src\test.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\autoC\symb.cpp">
-      <Filter>源文件\autoC</Filter>
-    </ClCompile>
     <ClCompile Include="src\core\cf.cpp">
       <Filter>源文件\core</Filter>
     </ClCompile>
@@ -52,7 +49,10 @@
       <Filter>头文件</Filter>
     </ClCompile>
     <ClCompile Include="src\core\optimize.cpp">
-      <Filter>源文件</Filter>
+      <Filter>源文件\core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\autoC\symb.cpp">
+      <Filter>源文件\autoC</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -82,42 +82,6 @@
     <Text Include="supplement\standard.cpp">
       <Filter>源文件</Filter>
     </Text>
-    <Text Include="src\testFile\testfile1.txt">
-      <Filter>资源文件\testfile</Filter>
-    </Text>
-    <Text Include="src\testFile\testfile2.txt">
-      <Filter>资源文件\testfile</Filter>
-    </Text>
-    <Text Include="src\testFile\testfile3.txt">
-      <Filter>资源文件\testfile</Filter>
-    </Text>
-    <Text Include="src\testFile\testfile4.txt">
-      <Filter>资源文件\testfile</Filter>
-    </Text>
-    <Text Include="src\testFile\testin1.txt">
-      <Filter>资源文件\testfile</Filter>
-    </Text>
-    <Text Include="src\testFile\testin2.txt">
-      <Filter>资源文件\testfile</Filter>
-    </Text>
-    <Text Include="src\testFile\testin3.txt">
-      <Filter>资源文件\testfile</Filter>
-    </Text>
-    <Text Include="src\testFile\testin4.txt">
-      <Filter>资源文件\testfile</Filter>
-    </Text>
-    <Text Include="src\testFile\testout1.txt">
-      <Filter>资源文件\testfile</Filter>
-    </Text>
-    <Text Include="src\testFile\testout2.txt">
-      <Filter>资源文件\testfile</Filter>
-    </Text>
-    <Text Include="src\testFile\testout3.txt">
-      <Filter>资源文件\testfile</Filter>
-    </Text>
-    <Text Include="src\testFile\testout4.txt">
-      <Filter>资源文件\testfile</Filter>
-    </Text>
     <Text Include="error.txt">
       <Filter>资源文件</Filter>
     </Text>
@@ -127,73 +91,31 @@
     <Text Include="mips.txt">
       <Filter>资源文件</Filter>
     </Text>
-    <Text Include="src\testFile\gcode\3\input1.txt">
+    <Text Include="src\testFile\race\input1.txt">
       <Filter>资源文件\gcode</Filter>
     </Text>
-    <Text Include="src\testFile\gcode\3\input2.txt">
+    <Text Include="src\testFile\race\input2.txt">
       <Filter>资源文件\gcode</Filter>
     </Text>
-    <Text Include="src\testFile\gcode\3\input3.txt">
+    <Text Include="src\testFile\race\input3.txt">
       <Filter>资源文件\gcode</Filter>
     </Text>
-    <Text Include="src\testFile\gcode\3\input4.txt">
+    <Text Include="src\testFile\race\output1.txt">
       <Filter>资源文件\gcode</Filter>
     </Text>
-    <Text Include="src\testFile\gcode\3\input5.txt">
+    <Text Include="src\testFile\race\output2.txt">
       <Filter>资源文件\gcode</Filter>
     </Text>
-    <Text Include="src\testFile\gcode\3\input7.txt">
+    <Text Include="src\testFile\race\output3.txt">
       <Filter>资源文件\gcode</Filter>
     </Text>
-    <Text Include="src\testFile\gcode\3\input8.txt">
+    <Text Include="src\testFile\race\testfile1.txt">
       <Filter>资源文件\gcode</Filter>
     </Text>
-    <Text Include="src\testFile\gcode\3\output1.txt">
+    <Text Include="src\testFile\race\testfile2.txt">
       <Filter>资源文件\gcode</Filter>
     </Text>
-    <Text Include="src\testFile\gcode\3\output2.txt">
-      <Filter>资源文件\gcode</Filter>
-    </Text>
-    <Text Include="src\testFile\gcode\3\output3.txt">
-      <Filter>资源文件\gcode</Filter>
-    </Text>
-    <Text Include="src\testFile\gcode\3\output4.txt">
-      <Filter>资源文件\gcode</Filter>
-    </Text>
-    <Text Include="src\testFile\gcode\3\output5.txt">
-      <Filter>资源文件\gcode</Filter>
-    </Text>
-    <Text Include="src\testFile\gcode\3\output6.txt">
-      <Filter>资源文件\gcode</Filter>
-    </Text>
-    <Text Include="src\testFile\gcode\3\output7.txt">
-      <Filter>资源文件\gcode</Filter>
-    </Text>
-    <Text Include="src\testFile\gcode\3\output8.txt">
-      <Filter>资源文件\gcode</Filter>
-    </Text>
-    <Text Include="src\testFile\gcode\3\testfile1.txt">
-      <Filter>资源文件\gcode</Filter>
-    </Text>
-    <Text Include="src\testFile\gcode\3\testfile2.txt">
-      <Filter>资源文件\gcode</Filter>
-    </Text>
-    <Text Include="src\testFile\gcode\3\testfile3.txt">
-      <Filter>资源文件\gcode</Filter>
-    </Text>
-    <Text Include="src\testFile\gcode\3\testfile4.txt">
-      <Filter>资源文件\gcode</Filter>
-    </Text>
-    <Text Include="src\testFile\gcode\3\testfile5.txt">
-      <Filter>资源文件\gcode</Filter>
-    </Text>
-    <Text Include="src\testFile\gcode\3\testfile6.txt">
-      <Filter>资源文件\gcode</Filter>
-    </Text>
-    <Text Include="src\testFile\gcode\3\testfile7.txt">
-      <Filter>资源文件\gcode</Filter>
-    </Text>
-    <Text Include="src\testFile\gcode\3\testfile8.txt">
+    <Text Include="src\testFile\race\testfile3.txt">
       <Filter>资源文件\gcode</Filter>
     </Text>
   </ItemGroup>

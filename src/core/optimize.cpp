@@ -4,19 +4,17 @@
 BlockTable blktab;
 extern struct McodeList mcodlis;
 static int oid=0;
+static int pos = 0;
 Mcode onextC() {
 	static int len = blktab.bma.size()-1;
-	int pos = 0;
-	if (oid <= len) {
-		Block* blk = blktab.get(oid);
-		return blk->get(pos++);
-		if (pos >= blk->size) {
-			pos = 0;
-			oid++;
-		}
+	if (pos >= blktab.get(oid)->size) {
+		pos = 0;
+		oid++;
 	}
-	else 
-		return Mcode(ENDOP, 0, 0);
+	if (oid <= len) 
+		return blktab.get(oid)->get(pos++);
+	
+	return Mcode(ENDOP, 0, 0);
 }
 void genBlkTab() {
 	Block* blk = new Block;
@@ -33,10 +31,16 @@ void genBlkTab() {
 		blktab.push(blk);
 	blktab.genDAG();
 }
-
 void oGenI() {
+	genBlkTab();
+	if (OMDEBUG == 1)
+		blktab.out();
+
 	Mcode(*p)() = onextC;
+	blktab.reGen();
 	gDeclare(p);
 	gFun(p);
+	pos = 0;
+	oid = blktab.mid;
 	gMain(p);
 }

@@ -22,8 +22,9 @@ string opi[27] = { "neg","addu","subu","mul","div","jr","sw","sw","bge","bne","b
 	insl->push("li $v0 11");\
 	insl->push("syscall");\
 }while(0)
-#define LIM 6
-#define MNUM 400
+#define LIM 7
+//修改LIM-->stroe&$gp需要修改
+#define MNUM 800
 #define GENBUF(s,x) do{\
 	s = PRELAB;\
 	s += "_buf";\
@@ -64,6 +65,7 @@ void LoadReg(insLis* insl,Data data,int pos,int pattern=0) {
 	/*读取地址所在地的数值到reg*/
 	string s;
 	static string ini[2] = {"$t8","$t9"};
+	//注意assignc中有隐式绑定
 	if (pattern == 0) reg[pos] = ini[pos];
 	if (data.type == CONSADD) {
 		SAPP(0, s, "li %s %d", reg[pos].c_str(), data.cont.cons);
@@ -80,8 +82,11 @@ void LoadReg(insLis* insl,Data data,int pos,int pattern=0) {
 			}
 				
 		}
-		else 
-			SAPP(0, s, "lw %s %d($gp)", reg[pos].c_str(),data.cont.varid*4);	
+		else {
+			SAPP(0, s, "lw %s %d($gp)", reg[pos].c_str(), data.cont.varid * 4);
+			insl->push(s);
+		}
+				
 	}
 	else if (data.type == VARADD) {
 		symbol* symb = data.cont.symb;
@@ -121,15 +126,21 @@ void LoadReg(insLis* insl,Data data,int pos,int pattern=0) {
 }
 void store(insLis * insl,string reg,Data *des) {
 	/*入栈中间函数&&消栈*/
-	string s;	
-	int id = reg[2] - '0';
-	SAPP(0, s, "sw %s %d($gp)",reg.c_str(), id * 4);
-	if (reg[1] == 't') {
-		if (id > LIM)
+	string s;
+	int id=0;
+	if (des->type == MVARADD)
+		id = des->cont.varid;
+	SAPP(0, s, "sw %s %d($gp)",reg.c_str(), id*4);
+	if (reg[1] == 't'&&des->type==MVARADD) {
+		if (id > LIM) {
 			insl->push(s);
+		}
+			
 	}
-	else
-		printf("store error\n");
+	else {
+		/*printf("store error\n");*/
+	}
+		
 }
 void parseExp(insLis* insl,Mcode mcode) {
 	/*f
@@ -166,15 +177,16 @@ void parseDeclare(insLis * insl,Mcode mcode) {
 	insl->push("move $fp $sp");
 
 	nowsymb = mcode.srcl->cont.symb;
+	if (nowsymb->wd.ss == "main") return;
 	for (int i = 0; i <= nowsymb->mVar; i++) {
 		if (i <= LIM) {
 			SAPP(0, s, "sw $t%d -%d($sp)", i, 4 * (i+1));
 			insl->push(s);
 		}
 		else {
-			SAPP(0, s, "lw $t8 %d($gp)", i, 4 * i);
+			SAPP(0, s, "lw $t8 %d($gp)", 4 * i);
 			insl->push(s);
-			SAPP(0, s, "sw $t8 -%d($sp)", i, 4 * (i+1));
+			SAPP(0, s, "sw $t8 -%d($sp)", 4 * (i+1));
 			insl->push(s);
 		}
 	}
@@ -194,9 +206,9 @@ void parseAss(insLis* insl,Mcode mcode) {
 		if(symb->scope==0)
 			SAPP(0, s, "sw %s %s(%s)", reg[0].c_str(),symb->wd.s.c_str(),reg[1].c_str());
 		else {
-			s =  "addu "+ reg[1]+ " "+reg[1] +" $fp";
+			s =  "addu $t9 "+reg[1] +" $fp";
 			insl->push(s);
-			SAPP(0, s, "sw %s %d(%s)", reg[0].c_str(),symb->pos,reg[1].c_str());
+			SAPP(0, s, "sw %s %d($t9)", reg[0].c_str(),symb->pos);
 		}
 		insl->push(s);
 	}
@@ -297,7 +309,7 @@ void parseNeg(insLis* insl, Mcode mcode) {
 	string rdes;
 	SAPP(0, rdes, "$t%d", mcode.des->cont.varid);
 	if (mcode.des->cont.varid > LIM)
-		rdes = "$v0";
+		rdes = "$t8";
 	LoadReg(insl, *mcode.srcl, 0);
 	insl->push("neg " + rdes +" "+reg[0]);
 	store(insl,rdes,mcode.des);
@@ -334,8 +346,7 @@ void parseCall(insLis* insl ,Mcode mcode) {
 	insl->push(opi[mcode.op] +" "+ GENFLAB(mcode.srcl->s));
 	if (mcode.des != 0) {
 		if (mcode.des->cont.varid > LIM) {
-			insl->push("addiu $sp $sp -4");
-			insl->push("sw $v0 ($sp)");
+			insl->push("sw $v0 "+to_string(mcode.des->cont.varid*4)+"($gp)");
 		}
 		else {
 			string s;
@@ -372,19 +383,20 @@ void parseRet(insLis* insl, Mcode mcode) {
 	insl->push(s);
 	SAPP(0, s, "addiu $sp $fp %d", sizev +sizep+ 8);
 	insl->push(s);
-	for (int i = 0; i <= nowsymb->mVar; i++) {
-		if (i <= LIM) {
-			SAPP(0, s, "lw $t%d -%d($fp)", i, 4 * (i + 1));
-			insl->push(s);
-		}
-		else {
-			SAPP(0, s, "lw $t8 -%d($fp)", i, 4 * (i + 1));
-			insl->push(s);
-			SAPP(0, s, "sw $t8 %d($gp)", i, 4 * i);
-			insl->push(s);
+	if (nowsymb->wd.ss != "main") {
+		for (int i = 0; i <= nowsymb->mVar; i++) {
+			if (i <= LIM) {
+				SAPP(0, s, "lw $t%d -%d($fp)", i, 4 * (i + 1));
+				insl->push(s);
+			}
+			else {
+				SAPP(0, s, "lw $t8 -%d($fp)", 4 * (i + 1));
+				insl->push(s);
+				SAPP(0, s, "sw $t8 %d($gp)", 4 * i);
+				insl->push(s);
+			}
 		}
 	}
-
 	SAPP(0, s, "lw $fp %d($fp)", sizev);
 	insl->push(s);
 	insl->push("jr $ra");
@@ -403,9 +415,9 @@ void parseLoad(insLis* insl, Mcode mcode) {
 	if (symb->scope == 0)
 		SAPP(0, s, "lw %s %s(%s)", rdes.c_str(), symb->wd.s.c_str(), reg[0].c_str());
 	else {
-		s = "addu " + reg[0] + " " + reg[0] + " $fp";
+		s = "addu $t8 " + reg[0] + " $fp";
 		insl->push(s);
-		SAPP(0, s, "lw %s %d(%s)", rdes.c_str(), symb->pos, reg[0].c_str());
+		SAPP(0, s, "lw %s %d($t8)", rdes.c_str(), symb->pos);
 	}
 	insl->push(s);
 	store(insl, rdes, mcode.des);
@@ -414,6 +426,7 @@ void parseMove(insLis* insl, Mcode mcode) {
 /*
 	movec()
 */
+	if (*mcode.des == *mcode.srcl) return;
 	LoadReg(insl, *mcode.des, 0);
 	LoadReg(insl, *mcode.srcl, 1);
 	insl->push("move " + reg[0] + " " + reg[1]);

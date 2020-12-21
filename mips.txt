@@ -1,23 +1,63 @@
+ini x
+ini y
+ini a
+ini b
+
+---------------
+declare main
+t0=a+a
+x=t0
+t0=a/a
+x=t0
+t1=a*a
+x=t1
+t2=a-a
+x=t2
+t2=t1+t1
+t3=t2+t1
+x=t3
+t2=t1-t0
+x=t2
+**end**
+
+---------------
 .data
+a: .space 4
+b: .space 4
+x: .space 4
+y: .space 4
 .asciiz
 dxlduckingss_buf:
 .text
-addi $sp $sp -400
+addiu $sp $sp -800
 move $gp $sp
 la $ra dxlduckingss_end_dxlduckingss
 dxlduckingss_main:
-addiu $sp $sp -12
-sw $ra 8($sp)
-sw $fp 4($sp)
+addiu $sp $sp -8
+sw $ra 4($sp)
+sw $fp 0($sp)
 move $fp $sp
-li $t8 27
-sw $t8 0($fp)
-lw $a0 0($fp)
-li $v0 1
-syscall
-li $a0 10
-li $v0 11
-syscall
+lw $t8 a
+lw $t9 a
+addu $t0 $t8 $t9
+sw $t0 x
+lw $t8 a
+lw $t9 a
+div $t0 $t8 $t9
+sw $t0 x
+lw $t8 a
+lw $t9 a
+mul $t1 $t8 $t9
+sw $t1 x
+lw $t8 a
+lw $t9 a
+subu $t2 $t8 $t9
+sw $t2 x
+addu $t2 $t1 $t1
+addu $t3 $t2 $t1
+sw $t3 x
+subu $t2 $t1 $t0
+sw $t2 x
 dxlduckingss_end_dxlduckingss:
 li $v0 10
 syscall

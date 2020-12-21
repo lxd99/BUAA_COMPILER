@@ -2,16 +2,10 @@
 #include "mcode.h"
 #define TMAX 7
 /*只能用于mcode中的代码*/
-#define GETDMOVE do \
-{ \
-	if(!ISTID((srcl)) &&!ISTID(srcr))\
-		move = 1;\
-	else if(ISTID((srcl)) && ISTID((srcr)))\
-		move = -1;\
-	else move = 0;\
-}while(0)
 #define ISCONST(x) ((x)->type==CONSADD|| \
 	((x)->type==VARADD && (x)->cont.symb->form==CONSF))
+#define ISZERO(x) (ISCONST(x)&&(x)->cont.cons == 0)
+#define ISONE(x) (ISCONST(x)&&(x)->cont.cons == 1)
 #define GETCONS(x,num) do{ \
 	if((x)->type == CONSADD) num = (x)->cont.cons; \
 	else { \
@@ -23,6 +17,15 @@ int dept = 0;
 McodeList	 mcodlis;
 void outC() {
 	mcodlis.outC();
+}
+int ispow(int x) {
+	if (x <= 0) return -1;
+	int cnt = 0;
+	while (x%2==0) {
+		x /= 2;
+		cnt++;
+	}
+	return x == 1 ? cnt : -1;
 }
 //true code
 void negc(Data *srcl,Data *&des) {
@@ -37,8 +40,7 @@ void negc(Data *srcl,Data *&des) {
 		des = new Data(CONSADD, (void*)(-l));
 	}
 	else {
-		if (!ISTID(srcl)) move = 1;
-		MODKVAR(des, move - 1);
+		des = new Data(MVARADD,(void*)(dept++));
 		mcode = Mcode(NEGOP, des, srcl);
 		mcode.genS(des->getS() + "=" + op + srcl->getS());
 		mcodlis.push(mcode);
@@ -57,8 +59,7 @@ void slc(int op,Data* srcl, Data *srcr,Data*& des) {
 		des = new Data(CONSADD, (void*)(l << r));
 	}
 	else {
-		des = new Data(MVARADD, ISTID(srcl) ?
-			(void*)(dept - 1) : (void*)(dept++));
+		des = new Data(MVARADD,(void*)(dept++));
 		Mcode mcode = Mcode(op, des, srcl, srcr);
 		mcode.genS(des->getS() + " = " +
 			srcl->getS() + " " + sop + " " + srcr->getS());
@@ -70,15 +71,18 @@ void addc(Data* srcl, Data* srcr, Data* &des) {
 	int move = 0;
 	des = new Data;
 	Mcode mcode;
-	if (ISCONST(srcl) && ISCONST(srcr)&&OPT>=1) {
+	if (ISCONST(srcl) && ISCONST(srcr) && OPT >= 1) {
 		int l, r;
-		GETCONS(srcl,l);
-		GETCONS(srcr,r);
-		des = new Data(CONSADD,(void*)(l+r));
+		GETCONS(srcl, l);
+		GETCONS(srcr, r);
+		des = new Data(CONSADD, (void*)(l + r));
 	}
+	else if (OPT >= 1 && ISZERO(srcl))
+		des = srcr;
+	else if (OPT >= 1 && ISZERO(srcr))
+		des = srcl;
 	else {
-		GETDMOVE;
-		MODKVAR(des, move - 1);
+		des = new Data(MVARADD, (void*)(dept++));
 		mcode = Mcode(ADDOP, des, srcl, srcr);
 		mcode.genS(des->getS() + "=" + srcl->getS() + op + srcr->getS());
 		mcodlis.push(mcode);
@@ -96,9 +100,12 @@ void subc(Data* srcl, Data* srcr, Data* &des) {
 		GETCONS(srcr, r);
 		des = new Data(CONSADD, (void*)(l - r));
 	}
+	else if (OPT >= 1 && ISZERO(srcl))
+		des = srcr;
+	else if (OPT >= 1 && ISZERO(srcr))
+		des = srcl;
 	else {
-		GETDMOVE;
-		MODKVAR(des, move - 1);
+		des = new Data(MVARADD, (void*)(dept++));
 		mcode = Mcode(SUBOP, des, srcl, srcr);
 		mcode.genS(des->getS() + "=" + srcl->getS() + op + srcr->getS());
 		mcodlis.push(mcode);
@@ -117,9 +124,19 @@ void multc(Data* srcl, Data* srcr, Data*& des) {
 		GETCONS(srcr, r);
 		des = new Data(CONSADD, (void*)(l * r));
 	}
+	else if ((ISZERO(srcl)||ISZERO(srcr)) && OPT >= 1) {
+		des = new Data(CONSADD, 0);
+	}
+	else if (ISCONST(srcl) && ispow(srcl->cont.cons)!=-1) {
+		int x = ispow(srcl->cont.cons);
+		slc(SLLOP, srcr, new Data(CONSADD, (void*)x),des);
+	}
+	else if (ISCONST(srcr) && ispow(srcr->cont.cons) != -1) {
+		int x = ispow(srcr->cont.cons);
+		slc(SLLOP, srcl, new Data(CONSADD, (void*)x), des);
+	}
 	else {
-		GETDMOVE;
-		MODKVAR(des, move - 1);
+		des = new Data(MVARADD, (void*)(dept++));
 		mcode = Mcode(MULOP, des, srcl, srcr);
 		mcode.genS(des->getS() + "=" + srcl->getS() + op + srcr->getS());
 		mcodlis.push(mcode);
@@ -138,8 +155,7 @@ void divc(Data* srcl, Data* srcr, Data* & des) {
 		des = new Data(CONSADD, (void*)(l / r));
 	}
 	else {
-		GETDMOVE;
-		MODKVAR(des, move - 1);
+		des = new Data(MVARADD, (void*)(dept++));
 		mcode = Mcode(DIVOP, des, srcl, srcr);
 		mcode.genS(des->getS() + "=" + srcl->getS() + op + srcr->getS());
 		mcodlis.push(mcode);
@@ -159,12 +175,7 @@ void readc(Data *des) {
 }
 void printc(Data* srcl) {
 	static string op = "print ";
-	Mcode mcode = Mcode(PRINTOP, 0, srcl);
-
-	if (ISTID(srcl)) {
-		dept -= 1;
-	}
-		
+	Mcode mcode = Mcode(PRINTOP, 0, srcl);		
 	mcode.genS(op + srcl->getS());
 	mcodlis.push(mcode);
 	
@@ -172,8 +183,6 @@ void printc(Data* srcl) {
 void assignc(Data* srcl, Data*& des) {
 	static string op = "=";
 	Mcode mcode = Mcode(ASSIGNOP,des,srcl);
-	if (ISTID(srcl)) dept -= 1;
-	if (ISTID(des)) dept -= 1;
 	mcode.genS(des->getS() + op + srcl->getS());
 	mcodlis.push(mcode);
 	
@@ -188,15 +197,13 @@ void inic(Data* srcl) {
 void pushc(Data* des, Data* srcl) {
 	static string op = "push ";
 	Mcode mcode = Mcode(PUSHOP,des,srcl);
-	if (ISTID(srcl))  dept -= 1;
 	mcode.genS(op + srcl->getS()); // s形式只输出一部分
 	mcodlis.push(mcode);
 	
 }
 void loadc(Data* srcl, Data* srcr, Data*& des) {
 	static string op = "load";
-	des = new Data(MVARADD,
-		ISTID(srcr) ? (void*)(dept - 1) : (void*)(dept++));
+	des = new Data(MVARADD,(void*)(dept++));
 	Mcode mcode = Mcode(LOADOP, des, srcl,srcr);
 	//只需要srcl即可生成函数
 	mcode.genS(op + " " + des->getS() + " from " + srcl->getS());
@@ -260,9 +267,24 @@ void condjc(int op, Data* srcl, Data* srcr, Data* des) {
 		mcode = Mcode(JLTOP, des, srcl, srcr);
 		break;
 	}
-	if(ISTID(srcl)) dept -=1;
-	if(ISTID(srcr)) dept -=1;
 	mcode.genS(srcl->getS()+" "+sop+" "+srcr->getS() + " goto "+des->getS());
+	mcodlis.push(mcode);
+}
+void newcondjc(Mcode mcode, string lab) {
+	map<int, int> joma = {
+	{JNEOP,JEQOP},{JEQOP,JNEOP},
+	{JGEOP,JLTOP},{JLTOP,JGEOP},
+	{JGTOP,JLEOP},{JLEOP,JGTOP}
+	};
+	map<int, string> jsma = {
+		{JNEOP,"!="},{JEQOP,"=="},
+		{JGEOP,">="},{JLTOP,"<"},
+		{JGTOP,">"},{JLEOP,"<="}
+	};
+	mcode.op = joma[mcode.op];
+	mcode.des = new Data(LABADD, 0);
+	mcode.des->s = lab;
+	mcode.genS(mcode.srcl->getS() + " " + jsma[mcode.op] + " " + mcode.srcr->getS() + " goto " + mcode.des->getS());
 	mcodlis.push(mcode);
 }
 void jumpc(Data* des) {

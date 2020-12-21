@@ -14,6 +14,7 @@ static char sbuf[150];
 word wd;
 symbtable symtab;
 map<string, int> strtab;
+extern struct McodeList	 mcodlis; 
 word next(int mode) {
 	static int len = wordList.size() - 1;
 	if (pos < len) return wordList[++pos];
@@ -409,6 +410,7 @@ void hasReturnFun() {
 	FOLLOW: 无返回|主函数
 	*/
 	static string s = "<有返回值函数定义>";
+	dept = 0;
 	int size = 0;
 	symbol *symb = new symbol;
 	symb->scope = 0; symb->form = FUNF;
@@ -571,16 +573,18 @@ void repSen(symbol * scope) {
 	*/
 	static string s = "<循环语句>";
 	string lab1,lab2;
-	int type = -1,mid = repid++;
+	int type = -1,mid = repid++,begin,end;
 	Data *srcl = new Data(), *srcr = new Data();
 	SAPP(0, lab1, "%s_%d_rep1", PRELAB, mid);
+	SAPP(0, lab2, "%s_%d_rep2", PRELAB, mid);
 	if (wd.type == WHILETK) {
-		glabc(lab1);
 		wd = next();
 		if (wd.type != LPARENT) error(wd,s);
 		wd = next();
-		SAPP(0, lab2, "%s_%d_rep2", PRELAB, mid);
+		begin = mcodlis.getSize();
 		condition(scope,lab2);
+		end = mcodlis.getSize() - 1;
+		glabc(lab1);
 		if (wd.type != RPARENT) error(wd,s,SRPARENT);
 		wd = next();
 		sentence(scope);
@@ -598,12 +602,14 @@ void repSen(symbol * scope) {
 		expression(scope,type,srcr);
 		
 		assignc(srcr, srcl);
-		glabc(lab1);
 
 		if (wd.type != SEMICN) error(wd,s,SSEMICN);
 		wd = next();
-		SAPP(0, lab2, "%s_%d_rep_2", PRELAB,mid);
+		SAPP(0, lab2, "%s_%d_rep2", PRELAB,mid);
+		begin = mcodlis.getSize();
 		condition(scope,lab2);
+		end = mcodlis.getSize() - 1;
+		glabc(lab1);
 		if (wd.type != SEMICN) error(wd,s,SSEMICN);
 
 		wd = next();
@@ -630,7 +636,9 @@ void repSen(symbol * scope) {
 
 	srcl = new Data(LABADD, 0);
 	srcl->s = lab1;
-	jumpc(srcl);
+	for (int i = begin; i < end; i++)
+		mcodlis.push(mcodlis.get(i));
+	newcondjc(mcodlis.get(end),lab1);
 	glabc(lab2);
 	addSen(s);
 }
@@ -846,7 +854,7 @@ void situaSen(symbol * scope) {
 	
 	string ms;
 	SAPP(0, ms, "%s_%d_switch_end", PRELAB, mid);
-	srcr = new Data(LABELOP, 0); srcr->s = ms;
+	srcr = new Data(LABADD, 0); srcr->s = ms;
 
 	if (wd.type != SWITCHTK) error(wd,s);
 	wd = next();
@@ -863,7 +871,6 @@ void situaSen(symbol * scope) {
 	if (wd.type != DEFAULTTK) error(wd,s,SDEFAULT);
 	else defaul(scope);
 	
-	if (ISTID(srcl)) dept -= 1;
 	glabc(srcr->s);
 	if (wd.type != RBRACE) error(wd,s);
 	wd = next();
@@ -901,6 +908,7 @@ void noReturnFun() {
 	*/
 	static string s = "<无返回值函数定义>";
 	int type = -1,size=0;
+	dept = 0;
 	symbol *symb = new symbol;
 	symb->scope = 0; 
 	symb->form = FUNF; 

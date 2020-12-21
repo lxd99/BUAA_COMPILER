@@ -1,5 +1,9 @@
+int x,y,a,b;
 void main(){
-	int a;
-	a = (5*6 -3*7)*(2+1);
-	printf(a);
+	x = a+a;
+	x = a/a;
+	x = a*a;
+	x = a-a;
+	x = a*a + a*a + a*a;
+	x = a*a - a/a;
 }
